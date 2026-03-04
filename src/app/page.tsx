@@ -18,7 +18,7 @@ export default function ClaimPage() {
     <main className="relative w-full h-[100dvh] bg-black text-white overflow-hidden flex flex-col items-center justify-center">
       
       {/* 배경 에셋 (항상 유지) */}
-      <div className="absolute inset-0 bg-cover bg-center grayscale scale-105" style={{ backgroundImage: "url('/images/model_01.png')" }} />
+      <div className="absolute inset-0 bg-cover bg-center grayscale scale-105" style={{ backgroundImage: "url('/images/img_04.png')" }} />
       <div className="absolute inset-0 bg-black/70 backdrop-blur-md" />
 
       {/* Syncing Animation */}
