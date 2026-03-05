@@ -79,28 +79,48 @@ export default function VaultPage() {
     setIsWaitlistModalOpen(true);
   };
 
-  // 🍏 2. 스캐너 로직 (문법 에러 해결 및 해상도 최적화)
+  // 🍏 2. 스캐너 로직 (하드웨어 렌즈 직접 탐색 및 후면 강제 할당)
   const startScanner = async () => {
     setIsScanning(true);
-    setScanLog("카메라 예열 중...");
+    setScanLog("카메라 시스템 초기화 중...");
     
     try {
+      // 🍏 STEP 1: 디바이스에 달린 모든 물리적 카메라 렌즈 목록을 징발합니다.
+      const devices = await Html5Qrcode.getCameras();
+      if (!devices || devices.length === 0) {
+        throw new Error("활성화된 물리 렌즈를 찾을 수 없습니다.");
+      }
+
+      // 🍏 STEP 2: '후면(Back/Rear/Environment)' 이라는 단어가 들어간 진짜 렌즈의 고유 ID를 색출합니다.
+      let targetCameraId = devices[0].id; // 기본값: 첫 번째 카메라
+      const backCamera = devices.find(device => 
+        device.label.toLowerCase().includes("back") || 
+        device.label.toLowerCase().includes("rear") || 
+        device.label.toLowerCase().includes("environment")
+      );
+
+      if (backCamera) {
+        targetCameraId = backCamera.id;
+        // 로그에 찾아낸 렌즈의 실제 하드웨어 이름을 출력합니다 (예: Back Camera)
+        setScanLog(`후면 렌즈 연결됨: ${backCamera.label.substring(0, 15)}...`);
+      } else {
+        // 이름으로 못 찾으면 스마트폰 특성상 배열의 마지막이 후면 렌즈인 경우가 많습니다.
+        targetCameraId = devices[devices.length - 1].id;
+        setScanLog("후면 렌즈 강제 우회 연결 중...");
+      }
+
       setTimeout(async () => {
         const html5QrCode = new Html5Qrcode("user-reader", { verbose: false });
         scannerRef.current = html5QrCode;
 
         await html5QrCode.start(
-          // 🍏 1. 에러 해결: 첫 번째 괄호에는 오직 '후면 카메라'라는 1개의 키만 넣습니다.
-          { facingMode: { exact: "environment" }},
-          // 🍏 2. 두 번째 괄호(설정값)에 해상도와 스캔 옵션을 분리하여 넣습니다.
+          // 🍏 STEP 3: facingMode 객체 따위는 버리고, 찾아낸 '물리적 렌즈 ID 문자열'을 직접 꽂습니다!
+          targetCameraId,
           { 
-            fps: 10,
+            fps: 15,
             qrbox: { width: 250, height: 250 }, 
             aspectRatio: 1.0,
-            videoConstraints: {
-              width: { ideal: 1280 },
-              height: { ideal: 720 }
-            }
+            // (주의: 하드웨어 ID를 직접 꽂을 때는 충돌 방지를 위해 videoConstraints 해상도 옵션을 제거하는 것이 안전합니다)
           },
           (decodedText) => {
             // ✅ QR 인식 성공 시
@@ -110,18 +130,16 @@ export default function VaultPage() {
             router.push(`/claim?source_url=${encodeURIComponent(decodedText)}`);
           },
           (errorMessage) => {
-            // 🚨 QR 인식 실패 로그 추적 (정상적인 스캔 과정)
+            // 🚨 QR 인식 실패 로그 추적
             if (errorMessage.includes("NotFound")) {
               setScanLog("탐색 중... (약 20cm 거리를 유지하세요)");
-            } else {
-              setScanLog(`분석 중...`);
             }
           }
         );
       }, 300);
     } catch (err: any) {
-      setScanLog(`치명적 에러: ${err.message || "카메라 권한 없음"}`);
-      alert("카메라 권한을 허용해주세요.");
+      setScanLog(`에러: ${err.message || "카메라 권한 없음"}`);
+      alert("브라우저 설정에서 카메라 접근 권한을 허용해주세요.");
       setIsScanning(false);
     }
   };
