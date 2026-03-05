@@ -78,7 +78,7 @@ export default function VaultPage() {
     setIsWaitlistModalOpen(true);
   };
 
-  // 🍏 스캐너 시작 로직 (인식률 300% 향상 브루트포스 모드)
+  // 🍏 스캐너 시작 로직 (블랙 스크린 해결 및 안정성 최우선)
   const startScanner = async () => {
     setIsScanning(true);
     try {
@@ -87,16 +87,11 @@ export default function VaultPage() {
         scannerRef.current = html5QrCode;
 
         await html5QrCode.start(
-          // 🍏 1. 아이폰 Safari의 화질 저하 락을 풀고 고해상도(FHD) 렌즈를 강제 구동합니다.
+          // 🍏 1. 블랙 스크린 원인 제거: 까다로운 해상도 요구를 지우고 후면 카메라만 요구합니다.
+          { facingMode: "environment" },
           { 
-            facingMode: "environment",
-            width: { min: 1024, ideal: 1920 },
-            height: { min: 1024, ideal: 1080 }
-          },
-          { 
-            fps: 20, // 프레임 레이트를 한계치까지 올림
-            // 🍏 2. qrbox 옵션을 아예 삭제합니다! (화면 전체 픽셀에서 QR을 스캔하도록 해방)
-            disableFlip: false 
+            fps: 15, // 프레임 속도는 부드럽게 유지
+            // 🍏 2. qrbox 옵션은 여전히 비워두어 화면 전체에서 QR을 찾도록 합니다.
           },
           (decodedText) => {
             if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // 심장 박동 햅틱
@@ -104,13 +99,13 @@ export default function VaultPage() {
             router.push(`/claim?source_url=${encodeURIComponent(decodedText)}`);
           },
           (errorMessage) => {
-            // 콘솔 노이즈 제거를 위해 에러 무시
+            // 콘솔 노이즈 제거 (무시)
           }
         );
-      }, 300); // 🍏 3. 렌즈 오토포커스가 물리적으로 자리 잡을 0.3초의 여유를 줌
+      }, 300); // 렌즈 오토포커스 물리적 안정화 시간
     } catch (err) {
       console.error("카메라 시작 실패:", err);
-      alert("카메라 권한을 허용해주세요.");
+      alert("카메라 권한을 허용하거나 브라우저를 새로고침 해주세요.");
       setIsScanning(false);
     }
   };
@@ -240,18 +235,16 @@ export default function VaultPage() {
           <button onClick={stopScanner} className="w-10 h-10 rounded-full bg-zinc-800/80 backdrop-blur-md flex items-center justify-center text-white border border-zinc-700 shadow-lg">✕</button>
         </div>
         
-        {/* 🍏 이 영역의 CSS를 단순화하여 라이브러리 충돌을 막습니다 */}
-        {/* 🍏 스캐너 컨테이너를 화면에 꽉 차게 변경하고 비디오 왜곡을 막습니다 */}
-        <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
+        {/* 🍏 스캐너 컨테이너: 라이브러리가 비디오를 정상적으로 그리도록 CSS 간섭을 최소화합니다 */}
+        <div className="flex-1 relative bg-black w-full h-full overflow-hidden">
           
           <div 
             id="user-reader" 
-            className={`absolute inset-0 w-full h-full [&>video]:w-full [&>video]:h-full [&>video]:object-cover ${!isScanning && 'hidden'}`}
+            className={`absolute inset-0 w-full h-full flex items-center justify-center [&_video]:w-full [&_video]:h-full [&_video]:object-cover ${!isScanning && 'hidden'}`}
           ></div>
           
-          {/* 타겟팅 가이드라인 UI (이제 기계는 화면 전체를 보지만, 유저의 시선을 집중시키기 위한 장식) */}
+          {/* 타겟팅 가이드라인 UI */}
           <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center z-10">
-            {/* 주변을 어둡게 하는 블러 효과 딤 처리 */}
             <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]"></div>
             
             <div className="w-[250px] h-[250px] border-2 border-white/20 rounded-3xl relative z-20">
