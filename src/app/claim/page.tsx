@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabase"; // 🍏 Supabase 보안 모듈 추가
 
-// 🍏 1. 기존의 모든 로직을 'ClaimContent'라는 내부 컴포넌트로 분리합니다.
 function ClaimContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -15,13 +15,31 @@ function ClaimContent() {
   const [selectedIndexes, setSelectedIndexes] = useState<number[]>([0]);
 
   useEffect(() => {
-    if (!sourceUrl) {
-      setErrorMsg("유효한 QR URL이 없습니다.");
-      setIsLoading(false);
-      return;
-    }
+    // 🍏 보안 검문소: 데이터 추출 전 로그인 여부부터 확인합니다.
+    const checkAuthAndExtract = async () => {
+      setIsLoading(true);
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // 🚨 비로그인 사용자 차단 및 강제 추방 로직
+      if (!session) {
+        alert("LUMEN 멤버십 로그인이 필요한 프라이빗 서비스입니다.");
+        
+        // 로그인 완료 후 다시 이 딥링크로 돌아올 수 있도록 현재 주소를 기억해 둡니다.
+        sessionStorage.setItem("lumen_redirect_after_login", window.location.href);
+        
+        // 메인(또는 로그인) 페이지로 쫓아냅니다. (현재 프로젝트의 로그인 경로에 맞게 수정하세요)
+        router.replace("/"); 
+        return;
+      }
 
-    const extractData = async () => {
+      // 🍏 로그인이 확인된 VIP 고객만 아래 추출 로직을 타게 됩니다.
+      if (!sourceUrl) {
+        setErrorMsg("유효한 QR URL이 없습니다.");
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const res = await fetch("/api/extract", {
           method: "POST",
@@ -41,12 +59,13 @@ function ClaimContent() {
       }
     };
 
-    extractData();
-  }, [sourceUrl]);
+    checkAuthAndExtract();
+  }, [sourceUrl, router]);
 
+  // (아래 선택 토글 및 저장 로직은 기존과 100% 동일합니다)
   const toggleSelection = (idx: number) => {
     if (selectedIndexes.includes(idx)) {
-      if (selectedIndexes.length === 1) return; // 최소 1장은 선택 유지
+      if (selectedIndexes.length === 1) return;
       setSelectedIndexes(selectedIndexes.filter(i => i !== idx));
     } else {
       setSelectedIndexes([...selectedIndexes, idx]);
@@ -70,7 +89,7 @@ function ClaimContent() {
     router.push("/vault");
   };
 
-  if (isLoading) return <div className="min-h-screen bg-black flex flex-col items-center justify-center"><div className="w-12 h-12 border-2 border-zinc-700 border-t-white rounded-full animate-spin mb-6" /><p className="text-[10px] text-white tracking-[0.3em] font-bold animate-pulse">EXTRACTING MASTERPIECE...</p></div>;
+  if (isLoading) return <div className="min-h-screen bg-black flex flex-col items-center justify-center"><div className="w-12 h-12 border-2 border-zinc-700 border-t-white rounded-full animate-spin mb-6" /><p className="text-[10px] text-white tracking-[0.3em] font-bold animate-pulse">VERIFYING MEMBERSHIP...</p></div>;
   if (errorMsg) return <div className="min-h-screen bg-black flex items-center justify-center text-red-500">{errorMsg}</div>;
 
   return (
@@ -85,18 +104,8 @@ function ClaimContent() {
         {images.map((imgUrl, idx) => {
           const isSelected = selectedIndexes.includes(idx);
           return (
-            <div 
-              key={idx} 
-              onClick={() => toggleSelection(idx)}
-              className={`aspect-[3/4] rounded-2xl overflow-hidden bg-zinc-900 border-2 cursor-pointer transition-all duration-300 relative group
-                ${isSelected ? 'border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)] scale-[1.02]' : 'border-zinc-800 opacity-50'}
-              `}
-            >
-              {isSelected && (
-                <div className="absolute top-3 right-3 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center z-20 shadow-lg">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                </div>
-              )}
+            <div key={idx} onClick={() => toggleSelection(idx)} className={`aspect-[3/4] rounded-2xl overflow-hidden bg-zinc-900 border-2 cursor-pointer transition-all duration-300 relative group ${isSelected ? 'border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)] scale-[1.02]' : 'border-zinc-800 opacity-50'}`}>
+              {isSelected && (<div className="absolute top-3 right-3 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center z-20 shadow-lg"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>)}
               <div className="absolute top-2 left-2 bg-black/50 backdrop-blur-md px-2 py-1 rounded-full z-10 text-[8px] font-mono text-zinc-300">IMG_{idx + 1}</div>
               <img src={imgUrl} alt={`Extracted ${idx}`} className={`w-full h-full object-cover transition-all duration-700 ${isSelected ? 'grayscale-0' : 'grayscale'}`} />
             </div>
@@ -127,7 +136,6 @@ function ClaimContent() {
   );
 }
 
-// 🍏 2. 최종 Export 되는 페이지를 Suspense로 감싸줍니다. (빌드 에러 완벽 해결)
 export default function ClaimPage() {
   return (
     <Suspense fallback={
