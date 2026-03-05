@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   console.log("🚀 [LUMEN AI] 에디터 파이프라인 가동 시작");
   
   try {
-    const { imageUrl } = await req.json();
+    const { imageUrl, brandColor } = await req.json();
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error("GEMINI_API_KEY가 환경 변수에 없습니다.");
 
@@ -21,16 +21,22 @@ export async function POST(req: Request) {
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: modelName }); 
 
-    // 🍏 [핵심] 구조를 3단계로 분리하고, 무조건 '한국어'로 작성하도록 강력히 통제
+    // 🍏 프롬프트에 컬러 정보를 주입하여 맞춤형 예술 평론을 작성하도록 강제합니다.
     const prompt = `
       당신은 Vogue/GQ 수석 에디터이자 반려견 역사 전문가입니다. 
       첨부된 흑백 사진을 분석하여 다음 형식을 엄격히 지켜 답변하십시오.
+      
+      [필수 참조 정보]
+      이 반려견의 브랜드 퍼스널 컬러(Hex Code)는 '${brandColor || "알 수 없음"}' 입니다. 
+      본문을 작성할 때, 이 색상이 주는 심리적, 예술적 느낌(예: 따뜻함, 강렬함, 우아함 등)을 
+      사진 속 반려견의 성격이나 질감과 연결하여 한 문장 이상 반드시 우아하게 표현하십시오.
+
       **주의: TITLE을 제외한 QUOTE와 CONTENT는 반드시 아름답고 유려한 '한국어(Korean)'로 작성하십시오.**
 
       출력 형식:
       TITLE: [2~4단어 사이의 압도적인 영문 잡지 타이틀]
       QUOTE: [사진의 분위기와 완벽하게 어울리는 반려견 관련 역사적 명언이나 지혜 (한국어 번역)]
-      CONTENT: [빛의 명암, 피사체의 털 질감, 시선의 우아함을 극찬하는 2문단의 예술 평론 (한국어)]
+      CONTENT: [빛의 명암, 피사체의 털 질감, 시선의 우아함, 그리고 주어진 '브랜드 컬러'를 극찬하는 2문단의 예술 평론 (한국어)]
     `;
 
     const imageParts = [{ inlineData: { data: buffer.toString("base64"), mimeType: mimeType } }];
