@@ -27,6 +27,7 @@ export default function VaultPage() {
   const [displayId, setDisplayId] = useState<string>("COCO");
   const [displayDate, setDisplayDate] = useState<string>("2026.03.04");
   const [userInitial, setUserInitial] = useState<string>("V");
+  const [scanLog, setScanLog] = useState<string>("렌즈 스탠바이...");
 
   // 🍏 AI 에디토리얼 상태 추가
   const [editorials, setEditorials] = useState<EditorialType[]>([]);
@@ -78,34 +79,49 @@ export default function VaultPage() {
     setIsWaitlistModalOpen(true);
   };
 
-  // 🍏 스캐너 시작 로직 (블랙 스크린 해결 및 안정성 최우선)
+  // 🍏 2. 스캐너 로직 (문법 에러 해결 및 해상도 최적화)
   const startScanner = async () => {
     setIsScanning(true);
+    setScanLog("카메라 예열 중...");
+    
     try {
       setTimeout(async () => {
-        const html5QrCode = new Html5Qrcode("user-reader");
+        const html5QrCode = new Html5Qrcode("user-reader", { verbose: false });
         scannerRef.current = html5QrCode;
 
         await html5QrCode.start(
-          // 🍏 1. 블랙 스크린 원인 제거: 까다로운 해상도 요구를 지우고 후면 카메라만 요구합니다.
+          // 🍏 1. 에러 해결: 첫 번째 괄호에는 오직 '후면 카메라'라는 1개의 키만 넣습니다.
           { facingMode: "environment" },
+          // 🍏 2. 두 번째 괄호(설정값)에 해상도와 스캔 옵션을 분리하여 넣습니다.
           { 
-            fps: 15, // 프레임 속도는 부드럽게 유지
-            // 🍏 2. qrbox 옵션은 여전히 비워두어 화면 전체에서 QR을 찾도록 합니다.
+            fps: 10,
+            qrbox: { width: 250, height: 250 }, 
+            aspectRatio: 1.0,
+            videoConstraints: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            }
           },
           (decodedText) => {
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // 심장 박동 햅틱
+            // ✅ QR 인식 성공 시
+            setScanLog("✅ 마스터피스 확인 완료!");
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]); 
             stopScanner();
             router.push(`/claim?source_url=${encodeURIComponent(decodedText)}`);
           },
           (errorMessage) => {
-            // 콘솔 노이즈 제거 (무시)
+            // 🚨 QR 인식 실패 로그 추적 (정상적인 스캔 과정)
+            if (errorMessage.includes("NotFound")) {
+              setScanLog("탐색 중... (약 20cm 거리를 유지하세요)");
+            } else {
+              setScanLog(`분석 중...`);
+            }
           }
         );
-      }, 300); // 렌즈 오토포커스 물리적 안정화 시간
-    } catch (err) {
-      console.error("카메라 시작 실패:", err);
-      alert("카메라 권한을 허용하거나 브라우저를 새로고침 해주세요.");
+      }, 300);
+    } catch (err: any) {
+      setScanLog(`치명적 에러: ${err.message || "카메라 권한 없음"}`);
+      alert("카메라 권한을 허용해주세요.");
       setIsScanning(false);
     }
   };
@@ -235,32 +251,37 @@ export default function VaultPage() {
           <button onClick={stopScanner} className="w-10 h-10 rounded-full bg-zinc-800/80 backdrop-blur-md flex items-center justify-center text-white border border-zinc-700 shadow-lg">✕</button>
         </div>
         
-        {/* 🍏 스캐너 컨테이너: 라이브러리가 비디오를 정상적으로 그리도록 CSS 간섭을 최소화합니다 */}
-        <div className="flex-1 relative bg-black w-full h-full overflow-hidden">
+        {/* 스캐너 컨테이너 */}
+        <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
           
           <div 
             id="user-reader" 
             className={`absolute inset-0 w-full h-full flex items-center justify-center [&_video]:w-full [&_video]:h-full [&_video]:object-cover ${!isScanning && 'hidden'}`}
           ></div>
           
-          {/* 타겟팅 가이드라인 UI */}
           <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center z-10">
             <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]"></div>
             
             <div className="w-[250px] h-[250px] border-2 border-white/20 rounded-3xl relative z-20">
-              <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-2xl"></div>
-              <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-2xl"></div>
-              <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-2xl"></div>
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-2xl"></div>
-              {isScanning && <div className="absolute top-0 left-0 w-full h-1 bg-white shadow-[0_0_20px_#ffffff] animate-[scan_2s_ease-in-out_infinite]" />}
+              <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-blue-500 rounded-tl-2xl"></div>
+              <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-2xl"></div>
+              <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-blue-500 rounded-bl-2xl"></div>
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-blue-500 rounded-br-2xl"></div>
+              {isScanning && <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 shadow-[0_0_20px_#3b82f6] animate-[scan_2s_ease-in-out_infinite]" />}
             </div>
             
-            <p className="text-white mt-10 text-[10px] font-bold bg-black/50 px-6 py-3 rounded-full backdrop-blur-md tracking-[0.2em] uppercase z-20">
-              마스터피스 QR 코드를 비춰주십시오
-            </p>
+            {/* 🍏 여기에 실시간 기계 로그(HUD)가 찍힙니다! */}
+            <div className="mt-8 flex flex-col items-center z-20">
+              <p className="text-white text-[11px] font-bold bg-black/60 px-6 py-3 rounded-full backdrop-blur-md tracking-[0.2em] uppercase mb-2">
+                QR 코드를 중앙 사각형에 맞추세요
+              </p>
+              <p className="text-blue-400 text-[9px] font-mono bg-blue-900/30 border border-blue-500/30 px-4 py-1.5 rounded-full animate-pulse">
+                {scanLog}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+        </div>
 
       <nav className="fixed bottom-0 left-0 right-0 h-24 bg-black/90 backdrop-blur-xl border-t border-zinc-900 flex justify-around items-center px-8 z-30 pb-safe">
         <button onClick={() => setActiveTab("vault")} className={`flex flex-col items-center gap-1 transition-colors ${activeTab === "vault" ? "text-white" : "text-zinc-600"}`}>
