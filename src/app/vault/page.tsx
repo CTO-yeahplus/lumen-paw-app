@@ -78,24 +78,45 @@ export default function VaultPage() {
     setIsWaitlistModalOpen(true);
   };
 
-  // QR 스캐너 로직 (기존 유지)
+  // 🍏 스캐너 시작/중지 로직 (인식률 극한 끌어올림)
   const startScanner = async () => {
     setIsScanning(true);
     try {
-      const html5QrCode = new Html5Qrcode("user-reader");
-      scannerRef.current = html5QrCode;
-      await html5QrCode.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          if (navigator.vibrate) navigator.vibrate(200);
-          stopScanner();
-          router.push(`/claim?source_url=${encodeURIComponent(decodedText)}`);
-        },
-        () => {}
-      );
+      // 라이브러리가 완전히 초기화될 수 있도록 약간의 지연 시간을 줍니다.
+      setTimeout(async () => {
+        const html5QrCode = new Html5Qrcode("user-reader");
+        scannerRef.current = html5QrCode;
+        
+        // 🍏 스마트폰 화면 비율에 맞춰 스캔 박스 크기를 동적으로 자동 계산 (가장 중요)
+        const qrboxFunction = function(viewfinderWidth: number, viewfinderHeight: number) {
+            const minEdgePercentage = 0.7; // 화면의 70% 크기를 스캔 영역으로 사용
+            const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+            const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+            return { width: qrboxSize, height: qrboxSize };
+        };
+
+        await html5QrCode.start(
+          { facingMode: "environment" }, // 무조건 후면 카메라 강제
+          { 
+            fps: 15, // 🍏 프레임 레이트를 높여 인식 속도 향상
+            qrbox: qrboxFunction, 
+            aspectRatio: 1.0, // 카메라 왜곡 방지
+          },
+          (decodedText) => {
+            console.log("🍏 QR SCAN SUCCESS:", decodedText); // 성공 시 터미널 로그
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // 강렬한 성공 햅틱
+            stopScanner();
+            // 클레임 페이지로 이동
+            router.push(`/claim?source_url=${encodeURIComponent(decodedText)}`);
+          },
+          (errorMessage) => {
+            // QR을 찾는 중 발생하는 일반적인 에러는 무시합니다. (정상 작동)
+          }
+        );
+      }, 100);
     } catch (err) {
-      alert("카메라 권한을 허용해주세요.");
+      console.error("카메라 시작 실패:", err);
+      alert("카메라 권한을 허용하거나, 브라우저를 다시 실행해주세요.");
       setIsScanning(false);
     }
   };
@@ -218,15 +239,33 @@ export default function VaultPage() {
         </div>
       </div>
 
-      {/* 하단 스캐너 모달 / 네비게이션바 (이전과 완전히 동일) */}
+      {/* 스캐너 오버레이 */}
       <div className={`fixed inset-0 z-[200] bg-black flex flex-col transition-transform duration-500 ease-in-out ${isScanning ? "translate-y-0" : "translate-y-full pointer-events-none"}`}>
-        <div className="absolute top-12 left-6 right-6 flex justify-between items-center z-10">
+        <div className="absolute top-12 left-6 right-6 flex justify-between items-center z-20">
           <h2 className="text-white font-bold tracking-widest uppercase text-xs">Sync New Asset</h2>
-          <button onClick={stopScanner} className="w-10 h-10 rounded-full bg-zinc-800/80 text-white border border-zinc-700">✕</button>
+          <button onClick={stopScanner} className="w-10 h-10 rounded-full bg-zinc-800/80 backdrop-blur-md flex items-center justify-center text-white border border-zinc-700 shadow-lg">✕</button>
         </div>
-        <div className="flex-1 relative overflow-hidden flex items-center justify-center">
-          <div id="user-reader" className={`w-full h-full max-h-[80vh] ${!isScanning && 'hidden'}`}></div>
-          {isScanning && <div className="absolute inset-0 border-4 border-blue-500/50 pointer-events-none" />}
+        
+        {/* 🍏 이 영역의 CSS를 단순화하여 라이브러리 충돌을 막습니다 */}
+        <div className="flex-1 relative bg-black flex items-center justify-center">
+          <div 
+            id="user-reader" 
+            className={`w-full max-w-md mx-auto overflow-hidden rounded-3xl ${!isScanning && 'hidden'}`}
+          ></div>
+          
+          {/* 타겟팅 가이드라인 UI (장식용) */}
+          <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center z-10">
+            <div className="w-[250px] h-[250px] border-2 border-white/30 rounded-3xl relative">
+              <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-blue-500 rounded-tl-2xl"></div>
+              <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-2xl"></div>
+              <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-blue-500 rounded-bl-2xl"></div>
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-blue-500 rounded-br-2xl"></div>
+              {isScanning && <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 shadow-[0_0_20px_#3b82f6] animate-[scan_2s_ease-in-out_infinite]" />}
+            </div>
+            <p className="text-white mt-8 text-xs font-bold bg-black/50 px-6 py-3 rounded-full backdrop-blur-md tracking-widest uppercase">
+              QR 코드를 중앙에 맞춰주세요
+            </p>
+          </div>
         </div>
       </div>
 
