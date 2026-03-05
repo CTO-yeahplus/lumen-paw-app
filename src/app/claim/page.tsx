@@ -69,21 +69,40 @@ function ClaimContent() {
     }
   };
 
-  const handleSaveToVault = () => {
-    if (images.length > 0 && selectedIndexes.length > 0) {
-      const selectedImages = selectedIndexes.map(i => images[i]);
-      sessionStorage.setItem("lumen_extracted_images", JSON.stringify(selectedImages));
-      sessionStorage.setItem("lumen_extracted_image", selectedImages[0]); 
-      
-      if (colorChips.length > 0) {
-        sessionStorage.setItem("lumen_dominant_color", colorChips[0]); 
-        sessionStorage.setItem("lumen_color_palette", JSON.stringify(colorChips)); 
+  // 🍏 꼼수(Session)를 버리고 Supabase DB에 완벽하게 영구 저장합니다.
+  const handleSaveToVault = async () => {
+    if (images.length === 0 || selectedIndexes.length === 0) return;
+    
+    // 버튼 상태를 로딩으로 바꾸기 위해 상태 하나를 추가하는 것을 권장합니다 (예: setIsSaving(true))
+    const selectedImages = selectedIndexes.map(i => images[i]);
+    const dominantColor = colorChips.length > 0 ? colorChips[0] : "#ffffff";
+
+    try {
+      // 1. 현재 로그인한 VIP 고객의 ID를 확인합니다.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert("로그인 세션이 만료되었습니다.");
+        router.push("/");
+        return;
       }
 
-      sessionStorage.setItem("lumen_asset_id", Date.now().toString());
-      sessionStorage.setItem("lumen_asset_date", new Date().toISOString().split('T')[0].replace(/-/g, '.'));
+      // 2. Supabase DB에 영구 기록합니다.
+      const { error } = await supabase.from('masterpieces').insert({
+        user_id: user.id,
+        source_url: sourceUrl, // S3 원본 URL
+        images: selectedImages,
+        color_palette: colorChips,
+        dominant_color: dominantColor
+      });
+
+      if (error) throw error;
+
+      // 3. 기록이 완료되면 비로소 금고로 안내합니다.
+      router.push("/vault");
+      
+    } catch (error: any) {
+      alert(`금고 저장 실패: ${error.message}`);
     }
-    router.push("/vault");
   };
 
   if (isLoading) return <div className="min-h-screen bg-black flex flex-col items-center justify-center"><div className="w-12 h-12 border-2 border-zinc-700 border-t-white rounded-full animate-spin mb-6" /><p className="text-[10px] text-white tracking-[0.3em] font-bold animate-pulse">VERIFYING MEMBERSHIP...</p></div>;
@@ -114,14 +133,21 @@ function ClaimContent() {
             })}
           </div>
 
+          {/* 🍏 수정됨: Brand Color Palette 화면 이탈 방지 및 다중 배열(Wrap) 적용 */}
           {colorChips.length > 0 && (
-            <div className="mb-12 border-t border-zinc-900 pt-8">
-              <h3 className="text-[10px] text-zinc-500 font-bold tracking-[0.3em] uppercase mb-4 text-center">Brand Color Palette</h3>
-              <div className="flex justify-center gap-4">
+            <div className="mb-12 border-t border-zinc-900 pt-8 px-4">
+              <h3 className="text-[10px] text-zinc-500 font-bold tracking-[0.3em] uppercase mb-6 text-center">Brand Color Palette</h3>
+              
+              {/* flex-wrap을 추가하여 넘치면 아랫줄로 자연스럽게 떨어지게 만듭니다 */}
+              <div className="flex flex-wrap justify-center gap-4 md:gap-5">
                 {colorChips.map((color, idx) => (
                   <div key={idx} className="flex flex-col items-center gap-2">
-                    <div className="w-10 h-10 rounded-full border border-zinc-700 shadow-lg" style={{ backgroundColor: color }} />
-                    <span className="text-[8px] font-mono text-zinc-500 uppercase">{color}</span>
+                    {/* 모바일에서는 w-8(32px), PC에서는 w-10(40px)으로 반응형 크기 조절 */}
+                    <div 
+                      className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-zinc-700 shadow-lg shrink-0" 
+                      style={{ backgroundColor: color }} 
+                    />
+                    <span className="text-[7px] md:text-[8px] font-mono text-zinc-500 uppercase">{color}</span>
                   </div>
                 ))}
               </div>

@@ -175,7 +175,7 @@ export default function AIEditorAdmin() {
             <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" />
             <div onClick={() => fileInputRef.current?.click()} className="aspect-video rounded-2xl border border-zinc-800 bg-zinc-950 flex flex-col items-center justify-center cursor-pointer hover:border-zinc-600 transition-all overflow-hidden group relative">
               {imageUrl ? (
-                <><img src={imageUrl} className="w-full h-full object-cover grayscale opacity-80 group-hover:scale-105 transition-transform duration-700" /><div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 backdrop-blur-sm transition-opacity"><span className="text-white text-xs font-bold tracking-widest">CHANGE IMAGE</span></div></>
+                <><img src={imageUrl} className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" /><div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/50 backdrop-blur-sm transition-opacity"><span className="text-white text-xs font-bold tracking-widest">CHANGE IMAGE</span></div></>
               ) : <span className="text-xs font-bold text-zinc-500 tracking-widest">+ UPLOAD IMAGE</span>}
             </div>
             

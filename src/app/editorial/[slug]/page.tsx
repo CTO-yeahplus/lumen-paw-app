@@ -137,10 +137,23 @@ export default function EditorialPage() {
         </div>
 
         <div className="mt-20 pt-10 border-t border-zinc-900 flex justify-between items-center text-[9px] text-zinc-500 uppercase tracking-widest font-bold">
-          <span>AI Vision Analysis by Gemini</span>
-          <span>Photographed by LUMEN</span>
+          <span>AI Vision Analysis by LK Ventures</span>
+          <span>Photographed by 견생네컷</span>
         </div>
       </article>
+
+      {/* 🍏 신규: 다 읽은 후 자연스러운 컬렉션 복귀 버튼 */}
+      <div className="px-8 pb-32 pt-10 flex justify-center bg-[#050505]">
+        <button 
+          onClick={() => router.push('/vault')}
+          className="flex items-center gap-3 text-zinc-400 hover:text-white transition-colors group"
+        >
+          <div className="w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center group-hover:border-zinc-500 transition-colors">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </div>
+          <span className="text-[10px] font-bold tracking-[0.3em] uppercase">Back to Collection</span>
+        </button>
+      </div>
       
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
         <button 
