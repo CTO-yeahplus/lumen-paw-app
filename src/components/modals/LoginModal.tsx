@@ -5,11 +5,25 @@ import { supabase } from "@/lib/supabase";
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  isFromQR?: boolean; // 🍏 QR 진입 여부를 판단하는 Prop 추가
+  isFromQR?: boolean; // 🍏 QR 진입 여부를 판단하는 Prop
 }
 
-export default function LoginModal({ isOpen, onClose,isFromQR = false }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, isFromQR = false }: LoginModalProps) {
   const [isLoading, setIsLoading] = useState<"idle" | "kakao" | "google">("idle");
+
+  // 🍏 [핵심] 매직 라우팅 목적지 판별 함수
+  // 주머니(SessionStorage)에 딥링크 티켓이 있으면 그곳으로, 없으면 일반 금고(vault)로 보냅니다.
+  const getRedirectUrl = () => {
+    if (typeof window !== "undefined") {
+      const ticketUrl = sessionStorage.getItem("lumen_redirect_after_login");
+      if (ticketUrl) {
+        // 로그인 도중 취소할 경우를 대비해 티켓을 지우지는 않습니다. (덮어씌워지므로 안전함)
+        return ticketUrl;
+      }
+      return `${window.location.origin}/vault`;
+    }
+    return '';
+  };
 
   // 🍏 카카오 간편 로그인 트리거
   const handleKakaoLogin = async () => {
@@ -18,7 +32,8 @@ export default function LoginModal({ isOpen, onClose,isFromQR = false }: LoginMo
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'kakao',
         options: {
-          redirectTo: `${window.location.origin}/vault` 
+          // 동적으로 목적지를 할당하여 매직 라우팅을 완성합니다.
+          redirectTo: getRedirectUrl() 
         }
       });
       if (error) throw error;
@@ -36,7 +51,8 @@ export default function LoginModal({ isOpen, onClose,isFromQR = false }: LoginMo
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/vault` 
+          // 동적으로 목적지를 할당하여 매직 라우팅을 완성합니다.
+          redirectTo: getRedirectUrl() 
         }
       });
       if (error) throw error;
@@ -61,7 +77,6 @@ export default function LoginModal({ isOpen, onClose,isFromQR = false }: LoginMo
         <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mb-8" />
         <div className="text-center mb-8">
         <div className="w-16 h-16 mx-auto rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center mb-4 shadow-xl">
-            {/* 🍏 진입 경로에 따라 아이콘 변경 */}
             {isFromQR ? (
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             ) : (
@@ -69,7 +84,6 @@ export default function LoginModal({ isOpen, onClose,isFromQR = false }: LoginMo
             )}
           </div>
           
-          {/* 🍏 진입 경로에 따른 완벽한 다국어/메시지 분기 */}
           <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">
             {isFromQR ? (
               <>마스터피스가<br/>준비되었습니다.</>
@@ -84,7 +98,7 @@ export default function LoginModal({ isOpen, onClose,isFromQR = false }: LoginMo
 
         <div className="space-y-3">
           
-          {/* 🍏 복원된 카카오 로그인 버튼 */}
+          {/* 카카오 로그인 버튼 */}
           <button 
             onClick={handleKakaoLogin}
             disabled={isLoading !== "idle"}
