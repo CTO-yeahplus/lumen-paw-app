@@ -91,7 +91,7 @@ export default function VaultPage() {
 
         await html5QrCode.start(
           // 🍏 1. 에러 해결: 첫 번째 괄호에는 오직 '후면 카메라'라는 1개의 키만 넣습니다.
-          { facingMode: "environment" },
+          { facingMode: { exact: "environment" }},
           // 🍏 2. 두 번째 괄호(설정값)에 해상도와 스캔 옵션을 분리하여 넣습니다.
           { 
             fps: 10,
