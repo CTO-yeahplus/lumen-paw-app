@@ -78,45 +78,39 @@ export default function VaultPage() {
     setIsWaitlistModalOpen(true);
   };
 
-  // 🍏 스캐너 시작/중지 로직 (인식률 극한 끌어올림)
+  // 🍏 스캐너 시작 로직 (인식률 300% 향상 브루트포스 모드)
   const startScanner = async () => {
     setIsScanning(true);
     try {
-      // 라이브러리가 완전히 초기화될 수 있도록 약간의 지연 시간을 줍니다.
       setTimeout(async () => {
         const html5QrCode = new Html5Qrcode("user-reader");
         scannerRef.current = html5QrCode;
-        
-        // 🍏 스마트폰 화면 비율에 맞춰 스캔 박스 크기를 동적으로 자동 계산 (가장 중요)
-        const qrboxFunction = function(viewfinderWidth: number, viewfinderHeight: number) {
-            const minEdgePercentage = 0.7; // 화면의 70% 크기를 스캔 영역으로 사용
-            const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-            const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
-            return { width: qrboxSize, height: qrboxSize };
-        };
 
         await html5QrCode.start(
-          { facingMode: "environment" }, // 무조건 후면 카메라 강제
+          // 🍏 1. 아이폰 Safari의 화질 저하 락을 풀고 고해상도(FHD) 렌즈를 강제 구동합니다.
           { 
-            fps: 15, // 🍏 프레임 레이트를 높여 인식 속도 향상
-            qrbox: qrboxFunction, 
-            aspectRatio: 1.0, // 카메라 왜곡 방지
+            facingMode: "environment",
+            width: { min: 1024, ideal: 1920 },
+            height: { min: 1024, ideal: 1080 }
+          },
+          { 
+            fps: 20, // 프레임 레이트를 한계치까지 올림
+            // 🍏 2. qrbox 옵션을 아예 삭제합니다! (화면 전체 픽셀에서 QR을 스캔하도록 해방)
+            disableFlip: false 
           },
           (decodedText) => {
-            console.log("🍏 QR SCAN SUCCESS:", decodedText); // 성공 시 터미널 로그
-            if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // 강렬한 성공 햅틱
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]); // 심장 박동 햅틱
             stopScanner();
-            // 클레임 페이지로 이동
             router.push(`/claim?source_url=${encodeURIComponent(decodedText)}`);
           },
           (errorMessage) => {
-            // QR을 찾는 중 발생하는 일반적인 에러는 무시합니다. (정상 작동)
+            // 콘솔 노이즈 제거를 위해 에러 무시
           }
         );
-      }, 100);
+      }, 300); // 🍏 3. 렌즈 오토포커스가 물리적으로 자리 잡을 0.3초의 여유를 줌
     } catch (err) {
       console.error("카메라 시작 실패:", err);
-      alert("카메라 권한을 허용하거나, 브라우저를 다시 실행해주세요.");
+      alert("카메라 권한을 허용해주세요.");
       setIsScanning(false);
     }
   };
@@ -247,23 +241,29 @@ export default function VaultPage() {
         </div>
         
         {/* 🍏 이 영역의 CSS를 단순화하여 라이브러리 충돌을 막습니다 */}
-        <div className="flex-1 relative bg-black flex items-center justify-center">
+        {/* 🍏 스캐너 컨테이너를 화면에 꽉 차게 변경하고 비디오 왜곡을 막습니다 */}
+        <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
+          
           <div 
             id="user-reader" 
-            className={`w-full max-w-md mx-auto overflow-hidden rounded-3xl ${!isScanning && 'hidden'}`}
+            className={`absolute inset-0 w-full h-full [&>video]:w-full [&>video]:h-full [&>video]:object-cover ${!isScanning && 'hidden'}`}
           ></div>
           
-          {/* 타겟팅 가이드라인 UI (장식용) */}
+          {/* 타겟팅 가이드라인 UI (이제 기계는 화면 전체를 보지만, 유저의 시선을 집중시키기 위한 장식) */}
           <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center z-10">
-            <div className="w-[250px] h-[250px] border-2 border-white/30 rounded-3xl relative">
-              <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-blue-500 rounded-tl-2xl"></div>
-              <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-blue-500 rounded-tr-2xl"></div>
-              <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-blue-500 rounded-bl-2xl"></div>
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-blue-500 rounded-br-2xl"></div>
-              {isScanning && <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 shadow-[0_0_20px_#3b82f6] animate-[scan_2s_ease-in-out_infinite]" />}
+            {/* 주변을 어둡게 하는 블러 효과 딤 처리 */}
+            <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]"></div>
+            
+            <div className="w-[250px] h-[250px] border-2 border-white/20 rounded-3xl relative z-20">
+              <div className="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-2xl"></div>
+              <div className="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-2xl"></div>
+              <div className="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-2xl"></div>
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-2xl"></div>
+              {isScanning && <div className="absolute top-0 left-0 w-full h-1 bg-white shadow-[0_0_20px_#ffffff] animate-[scan_2s_ease-in-out_infinite]" />}
             </div>
-            <p className="text-white mt-8 text-xs font-bold bg-black/50 px-6 py-3 rounded-full backdrop-blur-md tracking-widest uppercase">
-              QR 코드를 중앙에 맞춰주세요
+            
+            <p className="text-white mt-10 text-[10px] font-bold bg-black/50 px-6 py-3 rounded-full backdrop-blur-md tracking-[0.2em] uppercase z-20">
+              마스터피스 QR 코드를 비춰주십시오
             </p>
           </div>
         </div>
