@@ -1,8 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function ClaimPage() {
+// 🍏 1. 기존의 모든 로직을 'ClaimContent'라는 내부 컴포넌트로 분리합니다.
+function ClaimContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sourceUrl = searchParams.get("source_url");
@@ -11,8 +12,6 @@ export default function ClaimPage() {
   const [colorChips, setColorChips] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
-  
-  // 🍏 여러 장을 담을 수 있는 상태 배열 (기본값: 첫 번째 사진 자동 선택)
   const [selectedIndexes, setSelectedIndexes] = useState<number[]>([0]);
 
   useEffect(() => {
@@ -45,7 +44,6 @@ export default function ClaimPage() {
     extractData();
   }, [sourceUrl]);
 
-  // 🍏 다중 선택 토글 로직
   const toggleSelection = (idx: number) => {
     if (selectedIndexes.includes(idx)) {
       if (selectedIndexes.length === 1) return; // 최소 1장은 선택 유지
@@ -55,17 +53,14 @@ export default function ClaimPage() {
     }
   };
 
-  // 🍏 선택된 모든 사진과 원본 브랜드 컬러를 Vault로 전송
   const handleSaveToVault = () => {
     if (images.length > 0 && selectedIndexes.length > 0) {
       const selectedImages = selectedIndexes.map(i => images[i]);
       sessionStorage.setItem("lumen_extracted_images", JSON.stringify(selectedImages));
       sessionStorage.setItem("lumen_extracted_image", selectedImages[0]); 
       
-      // 👇 이 부분을 수정/추가합니다.
       if (colorChips.length > 0) {
-        sessionStorage.setItem("lumen_dominant_color", colorChips[0]); // 메인 컬러 유지
-        // 🍏 JSON 원본에 있던 컬러칩 배열 '전체'를 통째로 저장합니다!
+        sessionStorage.setItem("lumen_dominant_color", colorChips[0]); 
         sessionStorage.setItem("lumen_color_palette", JSON.stringify(colorChips)); 
       }
 
@@ -86,7 +81,6 @@ export default function ClaimPage() {
         <p className="text-[10px] text-zinc-500 mt-3 tracking-widest">금고에 보관할 사진들을 선택하십시오 (다중 선택 가능)</p>
       </header>
 
-      {/* 🍏 사진 다중 선택 그리드 */}
       <div className="grid grid-cols-2 gap-4 mb-12">
         {images.map((imgUrl, idx) => {
           const isSelected = selectedIndexes.includes(idx);
@@ -130,5 +124,19 @@ export default function ClaimPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+// 🍏 2. 최종 Export 되는 페이지를 Suspense로 감싸줍니다. (빌드 에러 완벽 해결)
+export default function ClaimPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white">
+        <div className="w-12 h-12 border-2 border-zinc-700 border-t-white rounded-full animate-spin mb-6" />
+        <p className="text-[10px] tracking-[0.3em] font-bold animate-pulse">PREPARING WORMHOLE...</p>
+      </div>
+    }>
+      <ClaimContent />
+    </Suspense>
   );
 }
