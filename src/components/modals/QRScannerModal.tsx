@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+// 파일 최상단
 import { Html5Qrcode } from "html5-qrcode";
 
 interface QRScannerModalProps {
@@ -17,24 +18,26 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRSca
 
     // 🍏 모달 애니메이션이 끝난 후, DOM이 완전히 그려진 뒤에 스캐너를 켭니다.
     const timer = setTimeout(() => {
+      // 🍏 1. 엔진 조립 (초기화): 복잡한 포맷 설정을 빼고, 가장 순수하고 안정적인 기본 상태로 생성합니다.
       if (!scannerRef.current) {
         scannerRef.current = new Html5Qrcode("lumen-qr-reader");
       }
 
       if (!isScanningRef.current) {
+        // 🍏 2. 엔진 시동: 프레임과 렌즈 비율만 하이엔드로 유지합니다.
         scannerRef.current.start(
           { facingMode: "environment" },
           { 
-            fps: 15, 
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0 // 🍏 핵심: CSS 왜곡 없이 라이브러리 자체에서 1:1 비율로 처리
+            fps: 10, 
+            qrbox: { width: 280, height: 280 }, 
+            aspectRatio: 1.0 
           },
           (decodedText) => {
             if (isScanningRef.current) {
               onScanSuccess(decodedText);
             }
           },
-          (errorMessage) => { /* 인식 중 에러 무시 */ }
+          (errorMessage) => { /* 무시 */ }
         ).then(() => {
           isScanningRef.current = true;
         }).catch(err => {
