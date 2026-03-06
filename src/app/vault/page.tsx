@@ -59,15 +59,17 @@ export default function VaultPage() {
     setColorPalette(asset.color_palette || []); // 🍏 추가: DB에서 팔레트를 꺼냅니다
   };
 
-  // 🍏 스캔 성공 시 웜홀 이동 로직
+  // 🍏 스캔 성공 시 웜홀 이동 로직 (디버깅 모드)
   const handleScanSuccess = (decodedText: string) => {
     setIsScanning(false); // 모달 닫기
     if (navigator.vibrate) navigator.vibrate(200);
 
-    if (decodedText.includes("download.life4cut.net")) {
+    // 1. 조건 완화: 'life4cut' 이나 'chemistry' 가 포함되어 있으면 무조건 통과
+    if (decodedText.includes("life4cut.net") || decodedText.includes("chemistry")) {
       router.push(`/claim?source_url=${encodeURIComponent(decodedText)}`);
     } else {
-      alert("LUMEN과 호환되지 않는 QR 코드입니다.");
+      // 2. 실패 시 렌즈가 무엇을 보았는지 정확히 출력합니다 (원인 파악용)
+      alert(`🚨 렌즈가 인식한 텍스트:\n\n${decodedText}\n\nLUMEN과 호환되지 않는 QR 코드입니다.`);
     }
   };
 
