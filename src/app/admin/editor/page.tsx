@@ -1,11 +1,11 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 const ADMIN_EMAIL = "cto@yeahplus.co.kr";
 
-export default function AIEditorAdmin() {
+function AIEditorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams ? searchParams.get('id') : null;
@@ -441,3 +441,18 @@ export default function AIEditorAdmin() {
     </div>
   );
 }
+
+export default function AIEditorAdmin() {
+    return (
+      <Suspense fallback={
+        <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center text-white">
+          <div className="w-10 h-10 border-2 border-zinc-700 border-t-white rounded-full animate-spin mb-6" />
+          <p className="text-[10px] tracking-[0.3em] font-bold text-zinc-500 uppercase animate-pulse">
+            Loading Studio...
+          </p>
+        </div>
+      }>
+        <AIEditorContent />
+      </Suspense>
+    );
+  }

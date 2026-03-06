@@ -41,6 +41,7 @@ export default function VaultPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [displayPetName, setDisplayPetName] = useState("COMPANION");
   const [displayPetBirth, setDisplayPetBirth] = useState("202X.XX.XX");
+  const [userEmail, setUserEmail] = useState<string>(""); // 🍏 추가: 유저 이메일을 담을 바구니
 
   const loadAssetToView = (asset: any) => {
     const imgs = asset.images || [];
@@ -82,6 +83,7 @@ export default function VaultPage() {
         return; 
       }
       setUserInitial((user.user_metadata?.full_name || user.email || "V").substring(0, 1).toUpperCase());
+      setUserEmail(user.email || ""); // 🍏 추가: 로그인한 유저의 이메일을 세팅합니다.
 
       const { data: mpData, error: mpError } = await supabase
         .from('masterpieces')
@@ -160,13 +162,15 @@ export default function VaultPage() {
         />
       </div>
 
-      {/* 하단 수동 테스트 Input */}
+      {/* 🍏 하단 수동 테스트 Input (관리자 전용 은밀한 백도어) */}
+      {userEmail === "cto@yeahplus.co.kr" && (
       <div className="fixed bottom-24 left-0 right-0 p-4 bg-black/90 border-t border-zinc-900 z-50">
         <div className="flex items-center gap-3 bg-zinc-950 border border-zinc-800 p-2 rounded-full shadow-lg">
           <input type="text" value={manualLink} onChange={(e) => setManualLink(e.target.value)} placeholder="Paste life4cut QR link here..." className="flex-1 bg-transparent px-4 text-xs text-white focus:outline-none placeholder:text-zinc-600" />
           <button onClick={handleInjectLink} className="bg-blue-600 text-white text-[10px] font-bold tracking-widest uppercase px-5 py-2.5 rounded-full active:scale-95 transition-transform">LINK INJECT</button>
         </div>
       </div>
+      )}
 
       {/* 🍏 네비게이션 모듈화 적용 */}
       <BottomNav 
