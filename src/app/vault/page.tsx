@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Html5Qrcode } from "html5-qrcode";
 import { supabase } from "@/lib/supabase";
+import QRScannerModal from "@/components/modals/QRScannerModal";
 
 import CheckoutModal, { CheckoutItem } from "@/components/modals/CheckoutModal";
 import WaitlistModal, { ConceptType } from "@/components/modals/WaitlistModal";
@@ -17,7 +17,6 @@ interface EditorialType { id: string; slug: string; title: string; image_url: st
 export default function VaultPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
   
   // 🍏 탭 상태: Vault(과거), Editorial(현재), Muse(미래) 3단 체제
   const [activeTab, setActiveTab] = useState<"vault" | "editorial" | "muse">("vault");
@@ -60,53 +59,17 @@ export default function VaultPage() {
     setColorPalette(asset.color_palette || []); // 🍏 추가: DB에서 팔레트를 꺼냅니다
   };
 
-  // 🍏 카메라 작동 로직
-  const onScanSuccess = (decodedText: string) => {
-    // 1. 스캔 성공 시 즉시 카메라 끄기 & 진동 피드백
-    if (scannerRef.current) {
-      scannerRef.current.stop().then(() => {
-        scannerRef.current?.clear();
-        setIsScanning(false);
-      }).catch(console.error);
-    }
+  // 🍏 스캔 성공 시 웜홀 이동 로직
+  const handleScanSuccess = (decodedText: string) => {
+    setIsScanning(false); // 모달 닫기
     if (navigator.vibrate) navigator.vibrate(200);
 
-    // 2. 올바른 인생네컷 QR인지 검증 후 웜홀(Claim)로 이동
     if (decodedText.includes("download.life4cut.net")) {
       router.push(`/claim?source_url=${encodeURIComponent(decodedText)}`);
     } else {
       alert("LUMEN과 호환되지 않는 QR 코드입니다.");
     }
   };
-
-  useEffect(() => {
-    if (isScanning) {
-      const html5QrCode = new Html5Qrcode("vault-scanner");
-      scannerRef.current = html5QrCode;
-      html5QrCode.start(
-        { facingMode: "environment" }, // 후면 카메라 
-        { fps: 15, qrbox: { width: 250, height: 250 } },
-        onScanSuccess,
-        () => {} // 인식 중 에러는 무시
-      ).catch(err => {
-        console.error(err);
-        alert("카메라 권한을 허용해주십시오.");
-        setIsScanning(false);
-      });
-    } else {
-      // isScanning이 false가 되면 카메라를 안전하게 끕니다.
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {});
-      }
-    }
-    
-    // 컴포넌트가 꺼질 때 메모리 누수 방지
-    return () => {
-      if (scannerRef.current && isScanning) {
-        scannerRef.current.stop().catch(() => {});
-      }
-    };
-  }, [isScanning]);
 
   // 🍏 신규: 컴포넌트가 로드될 때 주소창의 꼬리표(?tab=...)를 확인하여 탭을 강제 이동시킵니다.
   useEffect(() => {
@@ -226,60 +189,12 @@ export default function VaultPage() {
       </div>
       )}
 
-      {/* 🍏 풀스크린 QR 스캐너 뷰파인더 */}
-      {isScanning && (
-        <div className="fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center">
-          <div className="absolute top-12 left-6 right-6 flex justify-between items-center z-10">
-            <div>
-              <h2 className="text-white font-bold tracking-widest text-sm uppercase">Scan Masterpiece</h2>
-              <p className="text-zinc-500 text-[10px] tracking-[0.2em] uppercase mt-1">LUMEN Vision Sensor</p>
-            </div>
-            <button 
-              onClick={() => setIsScanning(false)} 
-              className="w-10 h-10 bg-zinc-900 border border-zinc-700 rounded-full flex items-center justify-center text-white active:scale-95"
-            >
-              ✕
-            </button>
-          </div>
-          
-          <div className="relative w-full max-w-sm aspect-square rounded-[40px] overflow-hidden border border-zinc-800 shadow-[0_0_50px_rgba(255,255,255,0.1)]">
-            {/* 실제 카메라 화면이 렌더링 될 공간 */}
-            <div id="vault-scanner" className="w-full h-full object-cover bg-zinc-950"></div>
-            
-            {/* 뷰파인더 스캔 애니메이션 (HUD 효과) */}
-            <div className="absolute top-0 left-0 w-full h-1 bg-white shadow-[0_0_20px_#ffffff] animate-[scan_2s_ease-in-out_infinite]" />
-            <div className="absolute inset-0 border-[4px] border-white/20 rounded-[40px] pointer-events-none" />
-          </div>
-          
-          <p className="mt-12 text-zinc-400 text-xs tracking-widest uppercase font-mono">
-            인화지 상단의 QR 코드를 인식하십시오
-          </p>
-          
-          <style jsx global>{`
-            /* 🍏 1. 스캐너 컨테이너의 기본 잡음(테두리 등) 제거 */
-            #vault-scanner {
-              width: 100% !important;
-              height: 100% !important;
-              border: none !important;
-            }
-            
-            /* 🍏 2. 내부 렌즈(비디오)가 1:1 영역을 꽉 채우도록 강제 (블랙바 제거) */
-            #vault-scanner video {
-              width: 100% !important;
-              height: 100% !important;
-              object-fit: cover !important; /* 남는 공간 없이 꽉 채우고 넘치면 자름 */
-            }
-
-            /* 🍏 3. 스캔 바 애니메이션 */
-            @keyframes scan {
-              0% { top: 0; opacity: 0; }
-              10% { opacity: 1; }
-              90% { opacity: 1; }
-              100% { top: 100%; opacity: 0; }
-            }
-          `}</style>
-        </div>
-      )}
+      {/* 🍏 분리된 스캐너 모달 호출 */}
+      <QRScannerModal 
+        isOpen={isScanning} 
+        onClose={() => setIsScanning(false)} 
+        onScanSuccess={handleScanSuccess} 
+      />
 
       {/* 🍏 네비게이션 모듈화 적용 */}
       <BottomNav 
