@@ -47,7 +47,7 @@ export default function MuseTab({ onOpenWaitlist }: MuseTabProps) {
             <div className="px-5 py-4 flex justify-between items-center border-b border-zinc-900 bg-black/40 backdrop-blur-md">
               <div className="flex items-center gap-3">
                 <div 
-                  className="w-8 h-8 rounded-full bg-zinc-800 bg-cover bg-center grayscale border border-zinc-800" 
+                  className="w-8 h-8 rounded-full bg-zinc-800 bg-cover bg-center border border-zinc-800" 
                   style={{ backgroundImage: `url('${concept.imageUrl}')` }} 
                 />
                 <div className="text-sm font-bold text-white">
@@ -61,7 +61,7 @@ export default function MuseTab({ onOpenWaitlist }: MuseTabProps) {
 
             {/* Main Image */}
             <div 
-              className="aspect-square w-full bg-cover bg-center grayscale hover:grayscale-0 transition-all duration-1000 cursor-pointer" 
+              className="aspect-square w-full bg-cover bg-center hover:grayscale-0 transition-all duration-1000 cursor-pointer" 
               style={{ backgroundImage: `url('${concept.imageUrl}')` }}
               onClick={() => onOpenWaitlist({ id: concept.id, name: concept.name, desc: concept.desc })}
             />

@@ -16,6 +16,8 @@ interface PrivateVaultTabProps {
   displayId: string;
   displayDate: string;
   onCheckout: (item: CheckoutItem) => void;
+  displayPetName: string;
+  displayPetBirth: string;
 }
 
 export default function PrivateVaultTab({
@@ -29,7 +31,9 @@ export default function PrivateVaultTab({
   dominantColor,
   displayId,
   displayDate,
-  onCheckout
+  onCheckout,
+  displayPetName,
+  displayPetBirth
 }: PrivateVaultTabProps) {
   
   // 🍏 Z축 아카이브 서랍을 열고 닫는 상태
@@ -76,21 +80,36 @@ export default function PrivateVaultTab({
           <div className="absolute inset-0 bg-cover bg-center transition-all duration-700" style={{ backgroundImage: `url('${displayImage}')` }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
           
-          <div className="absolute bottom-8 left-6 right-6">
-            <h3 className="text-3xl font-extrabold tracking-tighter mb-1 text-white">{displayId}</h3>
-            <p className="text-zinc-400 text-xs tracking-wider uppercase font-medium">Synced · {displayDate}</p>
-            
-            {vaultImages && vaultImages.length > 1 && (
-              <div className="flex items-center gap-2 mt-6 relative z-20 pointer-events-none">
-                {vaultImages.map((_, idx) => (
-                  <div 
-                    key={idx} 
-                    className={`h-[3px] rounded-full transition-all duration-500 shadow-[0_1px_4px_rgba(0,0,0,0.8)] ${idx === currentImgIndex ? 'w-8 bg-white' : 'w-3 bg-white/40'}`}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          {/* 🍏 감성적으로 재배치된 텍스트 영역 */}
+            <div className="absolute bottom-8 left-6 right-6 flex justify-between items-end">
+                <div>
+                {/* 1. 원래 크던 ASSET ID를 작고 은은하게 위로 올림 */}
+                <p className="text-[9px] font-mono text-white/50 tracking-widest mb-1.5">
+                    ID: {displayId}
+                </p>
+                
+                {/* 2. 강아지 이름을 거대한 메인 타이틀로 승격 */}
+                <h2 className="text-4xl md:text-5xl font-serif font-bold text-white drop-shadow-xl tracking-tighter uppercase mb-1">
+                    {displayPetName}
+                </h2>
+                
+                {/* 3. 생년월일을 우아한 서브 타이틀로 배치 */}
+                <p className="text-[10px] font-bold tracking-[0.3em] text-white/80 uppercase">
+                    BORN {displayPetBirth}
+                </p>
+                </div>
+
+                {/* 우측 하단: 브랜드 오라(Aura) 컬러칩 */}
+                <div className="flex flex-col items-center gap-2">
+                <div 
+                    className="w-10 h-10 rounded-full border border-white/20 shadow-[0_0_20px_rgba(0,0,0,0.5)] backdrop-blur-md" 
+                    style={{ backgroundColor: dominantColor }} 
+                />
+                <span className="text-[7px] font-mono text-white/70 tracking-widest uppercase">
+                    Aura
+                </span>
+                </div>
+            </div>
         </div>
       </div>
 

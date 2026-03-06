@@ -16,6 +16,10 @@ function ClaimContent() {
   const [errorMsg, setErrorMsg] = useState("");
   const [selectedIndexes, setSelectedIndexes] = useState<number[]>([0]);
 
+  // 기존 상태들 아래에 추가
+  const [petName, setPetName] = useState("");
+  const [petBirthDate, setPetBirthDate] = useState(""); // 예: 2023.05.12
+
   // 🍏 로그인 모달 표시 여부를 관리하는 상태
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
@@ -92,7 +96,9 @@ function ClaimContent() {
         source_url: sourceUrl, // S3 원본 URL
         images: selectedImages,
         color_palette: colorChips,
-        dominant_color: dominantColor
+        dominant_color: dominantColor,
+        pet_name: petName || "UNKNOWN",
+        pet_birth_date: petBirthDate || "202X.XX.XX"
       });
 
       if (error) throw error;
@@ -132,6 +138,33 @@ function ClaimContent() {
               );
             })}
           </div>
+
+          {/* 🍏 강아지 정보 입력 폼 */}
+            <div className="mt-8 space-y-5 bg-zinc-900/50 p-6 rounded-2xl border border-zinc-800">
+                <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-4">Companion Profile</h3>
+                
+                <div>
+                <label className="block text-[9px] font-bold text-zinc-400 tracking-widest mb-2">NAME (이름)</label>
+                <input 
+                    type="text" 
+                    value={petName} 
+                    onChange={(e) => setPetName(e.target.value)}
+                    placeholder="강아지 이름을 입력하세요 (ex. MAX)"
+                    className="w-full bg-black border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-white transition-colors uppercase"
+                />
+                </div>
+
+                <div>
+                <label className="block text-[9px] font-bold text-zinc-400 tracking-widest mb-2">BIRTH DATE (생년월일)</label>
+                <input 
+                    type="text" 
+                    value={petBirthDate} 
+                    onChange={(e) => setPetBirthDate(e.target.value)}
+                    placeholder="YYYY.MM.DD (ex. 2021.04.15)"
+                    className="w-full bg-black border border-zinc-800 rounded-xl p-4 text-sm text-white focus:border-white transition-colors"
+                />
+                </div>
+            </div>
 
           {/* 🍏 수정됨: Brand Color Palette 화면 이탈 방지 및 다중 배열(Wrap) 적용 */}
           {colorChips.length > 0 && (

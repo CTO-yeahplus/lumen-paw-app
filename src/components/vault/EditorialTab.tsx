@@ -17,7 +17,7 @@ export default function EditorialTab({ editorials }: { editorials: EditorialType
         {editorials.map((edit) => (
           <article key={edit.id} className="cursor-pointer group" onClick={() => router.push(`/editorial/${edit.slug}`)}>
             <div className="aspect-[16/10] rounded-2xl overflow-hidden relative mb-5 border border-zinc-800/50">
-              <div className="absolute inset-0 bg-cover bg-center  group-hover:scale-105 transition-transform duration-1000" style={{ backgroundImage: `url('${edit.image_url}')` }} />
+              <div className="absolute inset-0 bg-cover bg-center  group-hover:scale-105 transition-transform grayscale duration-1000" style={{ backgroundImage: `url('${edit.image_url}')` }} />
             </div>
             <div className="px-2">
               <h4 className="text-white text-lg font-bold tracking-tight mb-2 group-hover:text-blue-400 transition-colors">{edit.title}</h4>

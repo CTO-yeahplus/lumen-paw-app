@@ -10,6 +10,7 @@ import ProfileModal from "@/components/modals/ProfileModal";
 import PrivateVaultTab from "@/components/vault/PrivateVaultTab";
 import EditorialTab from "@/components/vault/EditorialTab";
 import MuseTab from "@/components/vault/MuseTab";
+import BottomNav from "@/components/navigation/BottomNav";
 
 interface EditorialType { id: string; slug: string; title: string; image_url: string; content: string; }
 
@@ -38,6 +39,8 @@ export default function VaultPage() {
   const [selectedConcept, setSelectedConcept] = useState<ConceptType | null>(null);
   const [manualLink, setManualLink] = useState("");
   const [isScanning, setIsScanning] = useState(false);
+  const [displayPetName, setDisplayPetName] = useState("COMPANION");
+  const [displayPetBirth, setDisplayPetBirth] = useState("202X.XX.XX");
 
   const loadAssetToView = (asset: any) => {
     const imgs = asset.images || [];
@@ -47,7 +50,28 @@ export default function VaultPage() {
     setDisplayId(`ASSET-${asset.id.substring(0, 4).toUpperCase()}`);
     const dateObj = new Date(asset.created_at);
     setDisplayDate(`${dateObj.getFullYear()}.${String(dateObj.getMonth() + 1).padStart(2, '0')}.${String(dateObj.getDate()).padStart(2, '0')}`);
+        
+    // 🍏 DB에서 가져온 이름과 생일 세팅
+    setDisplayPetName(asset.pet_name || "MY DOG");
+    setDisplayPetBirth(asset.pet_birth_date || "UNKNOWN DATE");
   };
+
+  // 🍏 신규: 컴포넌트가 로드될 때 주소창의 꼬리표(?tab=...)를 확인하여 탭을 강제 이동시킵니다.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get("tab");
+    
+    if (tab === "editorial") {
+      setActiveTab("editorial");
+    } else if (tab === "muse") {
+      setActiveTab("muse");
+    }
+    
+    // 탭 이동 후에는 주소창을 깔끔하게 정리해줍니다 (선택 사항)
+    if (tab) {
+      window.history.replaceState(null, '', '/vault');
+    }
+  }, []);
 
   useEffect(() => {
     const fetchAllVaultData = async () => {
@@ -115,6 +139,9 @@ export default function VaultPage() {
           displayId={displayId}
           displayDate={displayDate}
           onCheckout={setCheckoutItem}
+          // 🍏 추가됨: 부모가 가진 강아지 이름과 생일을 자식에게 건네줍니다.
+          displayPetName={displayPetName}
+          displayPetBirth={displayPetBirth}
         />
       </div>
 
@@ -141,30 +168,12 @@ export default function VaultPage() {
         </div>
       </div>
 
-      {/* 🍏 네비게이션: 4-버튼 럭셔리 시스템 (Vault, Story, Scanner, Muse) */}
-      <nav className="fixed bottom-0 left-0 right-0 h-24 bg-black/90 backdrop-blur-xl border-t border-zinc-900 flex justify-between items-center px-6 z-30 pb-safe">
-        
-        <button onClick={() => setActiveTab("vault")} className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeTab === "vault" ? "text-white" : "text-zinc-600"}`}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
-          <span className="text-[8px] font-bold tracking-widest">VAULT</span>
-        </button>
-
-        <button onClick={() => setActiveTab("editorial")} className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeTab === "editorial" ? "text-white" : "text-zinc-600"}`}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-          <span className="text-[8px] font-bold tracking-widest">STORY</span>
-        </button>
-
-        {/* 중앙 스캐너: 브랜드의 핵심 액션 */}
-        <button onClick={() => setIsScanning(true)} className="relative -top-4 w-14 h-14 bg-white rounded-full flex items-center justify-center text-black shadow-[0_0_30px_rgba(255,255,255,0.3)] active:scale-95 transition-transform shrink-0 mx-2">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path></svg>
-        </button>
-
-        <button onClick={() => setActiveTab("muse")} className={`flex-1 flex flex-col items-center gap-1 transition-colors ${activeTab === "muse" ? "text-white" : "text-zinc-600"}`}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 8 16 12 12 16"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-          <span className="text-[8px] font-bold tracking-widest">MUSE</span>
-        </button>
-
-      </nav>
+      {/* 🍏 네비게이션 모듈화 적용 */}
+      <BottomNav 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onScanClick={() => setIsScanning(true)} 
+      />
 
       <WaitlistModal isOpen={isWaitlistModalOpen} concept={selectedConcept} onClose={() => setIsWaitlistModalOpen(false)} />
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} />
