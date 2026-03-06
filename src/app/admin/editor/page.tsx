@@ -225,7 +225,7 @@ export default function AIEditorAdmin() {
 
             <div className="flex-1 overflow-y-auto scrollbar-hide">
                <div className="relative h-[55%] w-full">
-                  <div className="absolute inset-0 bg-cover bg-center grayscale" style={{ backgroundImage: `url('${imageUrl || "/images/img_01.png"}')` }} />
+                  <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url('${imageUrl || "/images/img_01.png"}')` }} />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/40 to-transparent" />
                   
                   <div className="absolute bottom-6 left-6 right-6">

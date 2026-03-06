@@ -40,7 +40,7 @@ export default function LumenCustomSection({ dominantColor, onCheckout }: LumenC
   if (!dominantColor) return null;
 
   return (
-    <div className="mt-12 p-6 rounded-[32px] border border-zinc-800/50 bg-zinc-900/40 relative overflow-hidden backdrop-blur-xl">
+    <div className="mt-6 p-6 rounded-[32px] border border-zinc-800/50 bg-zinc-900/40 relative overflow-hidden backdrop-blur-xl">
       <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundColor: dominantColor }} />
       
       <div className="relative z-10">

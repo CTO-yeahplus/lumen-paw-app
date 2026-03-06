@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" className="dark">
       <body className={`${inter.className} bg-black text-white flex justify-center min-h-screen`}>
         {/* 🍏 데스크탑에서 열어도 아이폰 비율(max-w-md) 유지 */}
         <div className="w-full max-w-md bg-zinc-950 min-h-screen relative shadow-2xl overflow-hidden">

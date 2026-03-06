@@ -5,6 +5,12 @@
   --foreground: #171717;
 }
 
+/* 시스템 설정을 덮어씌움 */
+body {
+  background-color: black !important;
+  color: white !important;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
