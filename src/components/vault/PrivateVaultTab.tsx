@@ -18,6 +18,8 @@ interface PrivateVaultTabProps {
   onCheckout: (item: CheckoutItem) => void;
   displayPetName: string;
   displayPetBirth: string;
+  setDominantColor: (color: string) => void; // 🍏 추가됨
+  colorPalette: string[];                    // 🍏 추가됨
 }
 
 export default function PrivateVaultTab({
@@ -33,11 +35,14 @@ export default function PrivateVaultTab({
   displayDate,
   onCheckout,
   displayPetName,
-  displayPetBirth
+  displayPetBirth,
+  setDominantColor,
+  colorPalette
 }: PrivateVaultTabProps) {
   
   // 🍏 Z축 아카이브 서랍을 열고 닫는 상태
   const [isArchiveSheetOpen, setIsArchiveSheetOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false); // 🍏 추가: 팔레트 팝업 상태
 
   const formatDate = (dateString: string) => {
     const d = new Date(dateString);
@@ -72,44 +77,91 @@ export default function PrivateVaultTab({
     <div className="px-6 py-10">
       
       {/* 1. 메인 디스플레이 */}
+      {/* 1. 메인 디스플레이 */}
       <div 
         className="relative group cursor-pointer transition-all duration-700 active:scale-[0.98]"
-        onClick={handleNextImage}
+        onClick={() => {
+          setIsPaletteOpen(false); // 🍏 사진을 넘길 때는 열려있던 팔레트를 닫습니다.
+          handleNextImage();
+        }}
       >
         <div className="aspect-[3/4] rounded-[32px] overflow-hidden border border-zinc-800 relative shadow-2xl bg-zinc-900 z-10 transition-colors duration-1000" style={{ boxShadow: `0 20px 50px -20px ${dominantColor}40` }}>
           <div className="absolute inset-0 bg-cover bg-center transition-all duration-700" style={{ backgroundImage: `url('${displayImage}')` }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
           
-          {/* 🍏 감성적으로 재배치된 텍스트 영역 */}
-            <div className="absolute bottom-8 left-6 right-6 flex justify-between items-end">
-                <div>
-                {/* 1. 원래 크던 ASSET ID를 작고 은은하게 위로 올림 */}
+          <div className="absolute bottom-8 left-6 right-6 flex justify-between items-end">
+              <div>
                 <p className="text-[9px] font-mono text-white/50 tracking-widest mb-1.5">
                     ID: {displayId}
                 </p>
                 
-                {/* 2. 강아지 이름을 거대한 메인 타이틀로 승격 */}
-                <h2 className="text-4xl md:text-5xl font-serif font-bold text-white drop-shadow-xl tracking-tighter uppercase mb-1">
+                {/* 🍏 색상 동기화: 강아지 이름에 dominantColor 적용 */}
+                <h2 
+                  className="text-4xl md:text-5xl font-serif font-bold drop-shadow-xl tracking-tighter uppercase mb-1 transition-colors duration-1000"
+                  style={{ color: dominantColor || "#ffffff" }}
+                >
                     {displayPetName}
                 </h2>
                 
-                {/* 3. 생년월일을 우아한 서브 타이틀로 배치 */}
                 <p className="text-[10px] font-bold tracking-[0.3em] text-white/80 uppercase">
                     BORN {displayPetBirth}
                 </p>
+              </div>
+
+              {/* 🍏 인터랙티브 오라(Aura) 팝업 메뉴 */}
+              <div className="relative flex flex-col items-center gap-2">
+                
+                {/* 숨겨진 팔레트 리스트 */}
+                <div className={`absolute bottom-full mb-3 right-0 flex flex-col gap-2 p-2.5 bg-black/80 backdrop-blur-xl border border-zinc-800 rounded-full transition-all duration-500 origin-bottom ${isPaletteOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}>
+                  {colorPalette.map((color, i) => (
+                    <button
+                      key={i}
+                      onClick={(e) => {
+                        e.stopPropagation(); // 🍏 클릭 시 사진이 넘어가는 것을 방지
+                        setDominantColor(color); // 🍏 색상 변경 리모컨 작동!
+                        setIsPaletteOpen(false);
+                      }}
+                      className="w-8 h-8 rounded-full border border-white/20 shadow-[0_0_15px_rgba(0,0,0,0.5)] hover:scale-110 active:scale-90 transition-transform"
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
                 </div>
 
-                {/* 우측 하단: 브랜드 오라(Aura) 컬러칩 */}
-                <div className="flex flex-col items-center gap-2">
+                {/* 메인 Aura 버튼 */}
                 <div 
-                    className="w-10 h-10 rounded-full border border-white/20 shadow-[0_0_20px_rgba(0,0,0,0.5)] backdrop-blur-md" 
+                    onClick={(e) => {
+                      e.stopPropagation(); // 🍏 클릭 시 사진 넘김 방지
+                      setIsPaletteOpen(!isPaletteOpen); // 팝업 토글
+                    }}
+                    className="w-10 h-10 rounded-full border border-white/20 shadow-[0_0_20px_rgba(0,0,0,0.5)] backdrop-blur-md cursor-pointer active:scale-95 transition-all duration-500" 
                     style={{ backgroundColor: dominantColor }} 
                 />
                 <span className="text-[7px] font-mono text-white/70 tracking-widest uppercase">
                     Aura
                 </span>
-                </div>
+              </div>
+          </div>
+
+          {/* 🍏 색상 동기화: 다이내믹 모션 인디케이터에 dominantColor 적용 */}
+          {vaultImages.length > 1 && (
+            <div className="absolute bottom-5 left-0 right-0 flex justify-center items-center gap-2 z-20">
+              {vaultImages.map((_, idx) => (
+                <div 
+                  key={idx} 
+                  className={`h-1.5 rounded-full transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                    idx === currentImgIndex 
+                      ? 'w-8' 
+                      : 'w-1.5 bg-white/40'
+                  }`} 
+                  style={idx === currentImgIndex ? { 
+                    backgroundColor: dominantColor || '#ffffff',
+                    boxShadow: `0 0 15px ${dominantColor}80` 
+                  } : {}}
+                />
+              ))}
             </div>
+          )}
+
         </div>
       </div>
 

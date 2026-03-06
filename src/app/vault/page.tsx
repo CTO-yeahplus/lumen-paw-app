@@ -32,6 +32,7 @@ export default function VaultPage() {
   
   const [userInitial, setUserInitial] = useState<string>("V");
   const [editorials, setEditorials] = useState<EditorialType[]>([]);
+  const [colorPalette, setColorPalette] = useState<string[]>([]); // 🍏 추가: 팔레트 전체 배열
 
   const [checkoutItem, setCheckoutItem] = useState<CheckoutItem | null>(null);
   const [isWaitlistModalOpen, setIsWaitlistModalOpen] = useState(false);
@@ -55,6 +56,7 @@ export default function VaultPage() {
     // 🍏 DB에서 가져온 이름과 생일 세팅
     setDisplayPetName(asset.pet_name || "MY DOG");
     setDisplayPetBirth(asset.pet_birth_date || "UNKNOWN DATE");
+    setColorPalette(asset.color_palette || []); // 🍏 추가: DB에서 팔레트를 꺼냅니다
   };
 
   // 🍏 신규: 컴포넌트가 로드될 때 주소창의 꼬리표(?tab=...)를 확인하여 탭을 강제 이동시킵니다.
@@ -138,12 +140,15 @@ export default function VaultPage() {
           setDisplayImage={setDisplayImage}
           vaultImages={vaultImages}
           dominantColor={dominantColor}
+          setDominantColor={setDominantColor} // 🍏 추가: 색상을 바꿀 수 있는 리모컨
+          colorPalette={colorPalette}
           displayId={displayId}
           displayDate={displayDate}
           onCheckout={setCheckoutItem}
           // 🍏 추가됨: 부모가 가진 강아지 이름과 생일을 자식에게 건네줍니다.
           displayPetName={displayPetName}
           displayPetBirth={displayPetBirth}
+
         />
       </div>
 
