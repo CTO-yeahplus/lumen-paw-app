@@ -1,212 +1,157 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 
-export default function AdminSenderPage() {
-  const [phone, setPhone] = useState("");
-  const [assetId, setAssetId] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "success">("idle");
-  
-  // 🍏 QR 스캐너 상태 관리
-  const [isScanning, setIsScanning] = useState(false);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    waitlist: 0,
+    manageOrders: 0,
+    orders: 0,
+    products: 0,
+    editorials: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 🍏 QR 스캔 성공 시 실행될 마법의 함수
-  const onScanSuccess = (decodedText: string) => {
-    try {
-      // 스캐너 중지 및 비프음(진동) 피드백
-      stopScanner();
-      if (navigator.vibrate) navigator.vibrate(200);
-
-      // 1. 인생네컷 URL인지 확인
-      if (decodedText.includes("download.life4cut.net")) {
-        const urlObj = new URL(decodedText);
-        const folderPath = urlObj.searchParams.get("folderPath") || "";
-        const extractedId = folderPath.split("/").pop() || "";
-        
-        // 2. Asset ID 파싱 후 폼에 자동 입력 (앞 8자리 절사)
-        const finalId = extractedId.substring(0, 8).toUpperCase();
-        setAssetId(finalId);
-      } else {
-        // 알 수 없는 QR일 경우 그대로 입력
-        setAssetId(decodedText);
-      }
-    } catch (error) {
-      console.error("QR 파싱 에러:", error);
-      alert("유효하지 않은 QR 코드입니다.");
-    }
-  };
-
-  // 스캐너 시작
-  const startScanner = async () => {
-    setIsScanning(true);
-    try {
-      const html5QrCode = new Html5Qrcode("reader");
-      scannerRef.current = html5QrCode;
-      
-      await html5QrCode.start(
-        { facingMode: "environment" }, // 후면 카메라 우선
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        onScanSuccess,
-        (errorMessage) => { /* 인식 중 에러는 무시 (계속 탐색함) */ }
-      );
-    } catch (err) {
-      console.error("카메라 시작 실패:", err);
-      alert("카메라 권한을 허용해주세요.");
-      setIsScanning(false);
-    }
-  };
-
-  // 스캐너 중지
-  const stopScanner = () => {
-    if (scannerRef.current) {
-      scannerRef.current.stop().then(() => {
-        scannerRef.current?.clear();
-        setIsScanning(false);
-      }).catch(err => console.error(err));
-    } else {
-      setIsScanning(false);
-    }
-  };
-
-  // 컴포넌트 언마운트 시 카메라 끄기 방어 코드
   useEffect(() => {
-    return () => {
-      if (scannerRef.current && isScanning) {
-        scannerRef.current.stop().catch(console.error);
-      }
-    };
-  }, [isScanning]);
+    fetchDashboardStats();
+  }, []);
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (phone.length < 10) return alert("전화번호를 정확히 입력해주세요.");
-    if (!assetId) return alert("Asset ID를 입력하거나 스캔해주세요.");
+  const fetchDashboardStats = async () => {
+    setIsLoading(true);
     
-    setStatus("sending");
+    // 🍏 다중 비동기 쿼리로 각 테이블의 총 데이터 개수(Count)를 동시에 가져옵니다.
+    const [
+      { count: waitlistCount },
+      { count: preOrdersCount },
+      { count: ordersCount },
+      { count: productsCount },
+      { count: editorialsCount }
+    ] = await Promise.all([
+      supabase.from('waitlists').select('*', { count: 'exact', head: true }),
+      supabase.from('pre_orders').select('*', { count: 'exact', head: true }),
+      supabase.from('orders').select('*', { count: 'exact', head: true }),
+      supabase.from('products').select('*', { count: 'exact', head: true }),
+      supabase.from('editorials').select('*', { count: 'exact', head: true })
+    ]);
+
+    setStats({
+      waitlist: waitlistCount || 0,
+      manageOrders: preOrdersCount || 0,
+      orders: ordersCount || 0,
+      products: productsCount || 0,
+      editorials: editorialsCount || 0,
+    });
     
-    setTimeout(() => {
-      setStatus("success");
-      setPhone(""); 
-      setAssetId("");
-      setTimeout(() => setStatus("idle"), 2000);
-    }, 1000);
+    setIsLoading(false);
   };
+
+  // 🍏 럭셔리 카드 UI 렌더링 함수
+  const DashboardCard = ({ title, desc, count, href, icon, color }: any) => (
+    <Link href={href} className="block group">
+      <div className="bg-zinc-950 border border-zinc-900 rounded-3xl p-8 relative overflow-hidden transition-all duration-500 hover:border-zinc-700 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(0,0,0,0.8)] h-full flex flex-col justify-between min-h-[200px]">
+        {/* 호버 시 은은하게 빛나는 백라이트 */}
+        <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[60px] opacity-0 group-hover:opacity-20 transition-opacity duration-700`} style={{ backgroundColor: color }} />
+        
+        <div className="relative z-10 flex justify-between items-start mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-black border border-zinc-800 flex items-center justify-center text-xl shadow-inner group-hover:scale-110 transition-transform duration-500">
+            {icon}
+          </div>
+          <div className="text-right">
+            <span className="text-[10px] text-zinc-500 font-mono tracking-widest uppercase block mb-1">Total Records</span>
+            <span className="text-3xl font-serif text-white group-hover:text-white transition-colors duration-300">
+              {isLoading ? "-" : count}
+            </span>
+          </div>
+        </div>
+        
+        <div className="relative z-10">
+          <h2 className="text-lg font-bold text-white tracking-widest uppercase mb-1">{title}</h2>
+          <p className="text-[10px] text-zinc-500 tracking-[0.2em] uppercase">{desc}</p>
+        </div>
+
+        {/* 하단 화살표 인터랙션 */}
+        <div className="absolute bottom-8 right-8 text-zinc-700 group-hover:text-white transition-colors duration-300 translate-x-4 group-hover:translate-x-0 opacity-0 group-hover:opacity-100">
+          &rarr;
+        </div>
+      </div>
+    </Link>
+  );
 
   return (
-    <main className="w-full min-h-[100dvh] bg-zinc-950 text-white flex flex-col font-sans pb-10">
-      
-      <header className="bg-black border-b border-zinc-800 p-6 pt-12 sticky top-0 z-50">
-        <div className="flex justify-between items-center">
-          <div>
-            <div className="text-blue-500 font-bold text-[10px] tracking-widest uppercase mb-1">Casting Director Only</div>
-            <h1 className="text-xl font-bold">LUMEN Quick Sender</h1>
-          </div>
-          <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          </div>
+    <div className="min-h-screen bg-black p-8 md:p-12 font-sans selection:bg-zinc-800">
+      <header className="mb-16 flex justify-between items-end border-b border-zinc-900 pb-8">
+        <div>
+          <h1 className="text-4xl font-serif font-bold text-white mb-2 tracking-wide">Executive Dashboard</h1>
+          <p className="text-zinc-500 text-xs tracking-[0.3em] uppercase">
+            LUMEN Control Tower &bull; {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
         </div>
+        <button 
+          onClick={fetchDashboardStats}
+          disabled={isLoading}
+          className={`w-10 h-10 rounded-full border border-zinc-800 flex items-center justify-center text-zinc-500 hover:text-white hover:border-zinc-600 transition-all ${isLoading ? 'animate-spin' : ''}`}
+        >
+          ↻
+        </button>
       </header>
 
-      <div className="flex-1 p-6 flex flex-col justify-center max-w-md mx-auto w-full">
+      {/* 🍏 그리드 레이아웃: 전략적 중요도에 따라 카드 배치 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        {/* 🍏 QR Scanner Area */}
-        <div className="mb-6">
-          <div className={`relative overflow-hidden bg-black border border-zinc-800 rounded-3xl transition-all duration-500 ${isScanning ? 'h-[350px] shadow-[0_0_30px_rgba(59,130,246,0.3)]' : 'h-20'}`}>
-            
-            {/* 스캐너 UI가 렌더링될 div */}
-            <div id="reader" className={`w-full h-full ${!isScanning && 'hidden'}`}></div>
-            
-            {/* 스캔 라인 애니메이션 (HUD 효과) */}
-            {isScanning && (
-              <div className="absolute top-0 left-0 w-full h-1 bg-blue-500 shadow-[0_0_15px_#3b82f6] animate-[scan_2s_ease-in-out_infinite]" />
-            )}
+        <DashboardCard 
+          title="VIP Waitlist" 
+          desc="초대 대기 및 승인 명단" 
+          count={stats.waitlist} 
+          href="/admin/waitlist" 
+          icon="🗝️" 
+          color="#F59E0B" // 앰버
+        />
 
-            {/* 스캐너 켜기/끄기 토글 버튼 */}
-            {!isScanning ? (
-              <button 
-                onClick={startScanner}
-                className="w-full h-full flex items-center justify-center gap-3 text-blue-400 font-bold hover:bg-zinc-900 transition-colors"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                카메라 켜기 (인화지 QR 스캔)
-              </button>
-            ) : (
-              <button 
-                onClick={stopScanner}
-                className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md text-white px-6 py-2 rounded-full text-xs font-bold border border-zinc-700"
-              >
-                스캔 취소
-              </button>
-            )}
-          </div>
-        </div>
+        <DashboardCard 
+          title="Manage Orders" 
+          desc="장인 공정 및 선주문 관제" 
+          count={stats.manageOrders} 
+          href="/admin/manage_orders" 
+          icon="⚒️" 
+          color="#3B82F6" // 블루
+        />
 
-        {/* 🍏 Sender Form */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-2xl relative">
-          {/* 스캔 완료 시 반짝이는 효과 */}
-          <div className={`absolute inset-0 border-2 border-blue-500 rounded-3xl pointer-events-none transition-opacity duration-1000 ${assetId && !isScanning ? 'opacity-100' : 'opacity-0'}`} />
+        <DashboardCard 
+          title="General Orders" 
+          desc="일반 굿즈 결제 내역" 
+          count={stats.orders} 
+          href="/admin/orders" 
+          icon="📦" 
+          color="#10B981" // 에메랄드
+        />
 
-          <form onSubmit={handleSend} className="space-y-5 relative z-10">
-            <div>
-              <div className="flex justify-between items-end mb-2">
-                <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest">1. Asset ID (사진 고유번호)</label>
-                {assetId && <span className="text-blue-400 text-[10px] font-bold">✔ SCANNED</span>}
-              </div>
-              <input 
-                type="text" 
-                value={assetId}
-                onChange={(e) => setAssetId(e.target.value)}
-                placeholder="QR 스캔 시 자동 입력됩니다"
-                className={`w-full bg-black border ${assetId ? 'border-blue-500/50 text-blue-400' : 'border-zinc-700 text-white'} rounded-xl h-14 px-4 font-mono text-lg focus:outline-none transition-colors`}
-                required
-              />
-            </div>
+        <DashboardCard 
+          title="Products" 
+          desc="비스포크 라인업 관리" 
+          count={stats.products} 
+          href="/admin/products" 
+          icon="💎" 
+          color="#8B5CF6" // 퍼플
+        />
 
-            <div>
-              <label className="block text-zinc-500 text-xs font-bold uppercase tracking-widest mb-2">2. 고객 전화번호 (- 제외)</label>
-              <input 
-                type="tel" 
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="01012345678"
-                className="w-full bg-black border border-zinc-700 text-white rounded-xl h-14 px-4 text-xl tracking-wider focus:outline-none focus:border-[#FEE500] transition-colors"
-                required
-              />
-            </div>
-
-            <button 
-              type="submit"
-              disabled={status === "sending"}
-              className={`w-full h-16 mt-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
-                status === "success" 
-                  ? "bg-green-500 text-black" 
-                  : "bg-[#FEE500] text-[#191919] hover:bg-[#FEE500]/90 active:scale-[0.98]"
-              }`}
-            >
-              {status === "idle" && (
-                <>
-                  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 3C6.477 3 2 6.58 2 11c0 2.825 1.763 5.3 4.417 6.81l-1.127 4.125c-.062.227.195.404.382.268l4.757-3.15c.504.062 1.028.097 1.571.097 5.523 0 10-3.58 10-8s-4.477-8-10-8z"/></svg>
-                  알림톡 발송하기
-                </>
-              )}
-              {status === "sending" && <span className="animate-pulse">발송 중...</span>}
-              {status === "success" && "발송 완료!"}
-            </button>
-          </form>
-        </div>
+        <DashboardCard 
+          title="Editorials" 
+          desc="브랜드 저널 및 매거진" 
+          count={stats.editorials} 
+          href="/admin/editor" 
+          icon="🖋️" 
+          color="#EC4899" // 핑크
+        />
 
       </div>
 
-      {/* 스캔 애니메이션 CSS 추가 */}
-      <style jsx global>{`
-        @keyframes scan {
-          0% { top: 0; opacity: 0; }
-          10% { opacity: 1; }
-          90% { opacity: 1; }
-          100% { top: 100%; opacity: 0; }
-        }
-      `}</style>
-    </main>
+      {/* 하단 장식용 카피 */}
+      <div className="mt-20 text-center">
+        <p className="text-[9px] text-zinc-700 tracking-[0.4em] uppercase font-serif">
+          Data translates into Aura. Aura translates into Eternity.
+        </p>
+      </div>
+    </div>
   );
 }

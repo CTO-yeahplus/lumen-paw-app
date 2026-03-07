@@ -60,8 +60,9 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRSca
   }, [isOpen, onClose, onScanSuccess]);
 
   return (
+    //<div className={`relative overflow-hidden bg-black border border-zinc-800 rounded-3xl transition-all duration-500 ${isOpen ? 'h-[350px] shadow-[0_0_30px_rgba(59,130,246,0.3)]' : 'h-20'}`}>
     <div className={`fixed inset-0 z-[200] bg-black transition-opacity duration-500 ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-      
+
       {/* 헤더 바 */}
       <div className="absolute top-12 left-6 right-6 flex justify-between items-center z-50">
         <div>
