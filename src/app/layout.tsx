@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/layout/LayoutWrapper"; // 🍏 새로 만들 컴포넌트
+import { Analytics } from "@vercel/analytics/next"; // 🍏 1. Analytics 임포트
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,6 +36,7 @@ export default function RootLayout({
         {/* 🍏 너비 조절 로직만 전담하는 클라이언트 래퍼로 감쌉니다. */}
         <LayoutWrapper>
           {children}
+          <Analytics />
         </LayoutWrapper>
       </body>
     </html>

@@ -1,10 +1,36 @@
 "use client";
 import { useState, useEffect } from "react";
 import LoginModal from "@/components/modals/LoginModal";
+import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
 
 export default function ClaimPage() {
+  const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
   const [isSyncing, setIsSyncing] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  
+  // 🍏 [핵심] 로비(메인 페이지)에 들어오자마자 VIP 여부를 검사합니다.
+  useEffect(() => {
+    const checkVipStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // 이미 로그인된 VIP라면, 로그인 창을 띄우지 않고 흔적 없이 금고로 보냅니다.
+        router.replace('/vault'); 
+      } else {
+        // 로그인이 안 된 일반 방문자에게만 로비(랜딩 페이지)를 보여줍니다.
+        setIsChecking(false);
+      }
+    };
+    
+    checkVipStatus();
+  }, [router]);
+
+  // 🍏 검사하는 아주 짧은 찰나의 순간 동안 하얀 화면(플리커링)이나 로그인 버튼이 보이지 않도록 암전 처리합니다.
+  if (isChecking) {
+    return <div className="min-h-screen bg-black" />;
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
-// 파일 최상단
 import { Html5Qrcode } from "html5-qrcode";
+import { track } from "@vercel/analytics";
 
 interface QRScannerModalProps {
   isOpen: boolean;
@@ -35,6 +35,9 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRSca
           (decodedText) => {
             if (isScanningRef.current) {
               onScanSuccess(decodedText);
+              track("qr_scan_success", { 
+                scanned_url: decodedText 
+              });
             }
           },
           (errorMessage) => { /* 무시 */ }

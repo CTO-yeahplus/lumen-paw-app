@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { track } from "@vercel/analytics";
 
 export interface ConceptType {
   id: string;
@@ -22,6 +23,8 @@ export default function WaitlistModal({ isOpen, concept, onClose }: WaitlistModa
   const [currentUser, setCurrentUser] = useState<{ email: string; name: string } | null>(null);
   const [isAgreed, setIsAgreed] = useState(false);
   const [manualEmail, setManualEmail] = useState("");
+  // 🍏 중복 예약 토스트 알림을 제어하는 스위치
+  const [showDuplicateToast, setShowDuplicateToast] = useState(false);
 
   useEffect(() => {
     if (concept) setDisplayConcept(concept);
@@ -70,6 +73,27 @@ export default function WaitlistModal({ isOpen, concept, onClose }: WaitlistModa
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
+      // 🍏 [핵심 1] 중복 예약 검사: 이 유저가 해당 컨셉(제품)에 이미 줄을 섰는지 명부를 확인합니다.
+      const { data: existingEntry } = await supabase
+        .from('waitlists')
+        .select('id')
+        .eq('user_id', user?.id)
+        .eq('concept_id', displayConcept.id);
+
+      // 🍏 [핵심 2] 이미 예약 기록이 있다면, 우아하게 토스트를 띄웁니다.
+      if (existingEntry && existingEntry.length > 0) {
+        setShowDuplicateToast(true); // 토스트 스위치 ON
+        setIsSubmitting(false);
+        
+        // 3초 뒤에 토스트가 사라지며 모달도 부드럽게 닫히도록 세팅
+        setTimeout(() => {
+          setShowDuplicateToast(false);
+          onClose(); 
+        }, 3000);
+        return;
+      }
+
+      // 🍏 [핵심 3] 기록이 없다면 정상적으로 금고(DB)에 명단을 넣습니다.
       const { error } = await supabase
         .from('waitlists')
         .insert([
@@ -83,7 +107,7 @@ export default function WaitlistModal({ isOpen, concept, onClose }: WaitlistModa
 
       if (error) throw error;
 
-      // 🍏 성공 시 상태 변경 (입력 폼은 숨기고, 중앙 모달을 띄웁니다)
+      // 성공 시 상태 변경 (입력 폼은 숨기고, 중앙 시네마틱 모달을 띄웁니다)
       setIsSuccess(true);
       
       // 3.5초 후 우아하게 전체 모달 닫기
@@ -188,7 +212,7 @@ export default function WaitlistModal({ isOpen, concept, onClose }: WaitlistModa
           ) : (
             <>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-              <span className="text-xs">우선 예약권 발급받기</span>
+              <span className="text-xs">VIP 우선 예약권 발급받기</span>
             </>
           )}
         </button>
@@ -210,6 +234,25 @@ export default function WaitlistModal({ isOpen, concept, onClose }: WaitlistModa
           </p>
         </div>
       </div>
+
+      {/* 💎 럭셔리 중복 예약 안내 토스트 */}
+      {showDuplicateToast && (
+        <div className="absolute bottom-32 left-1/2 -translate-x-1/2 w-[90%] max-w-sm bg-zinc-900/98 backdrop-blur-2xl border border-zinc-600 text-center px-8 py-8 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.9)] z-[100] animate-in slide-in-from-bottom-12 fade-in duration-500">
+          
+          <div className="w-10 h-1 bg-zinc-500 rounded-full mx-auto mb-6" />
+          
+          <p className="text-xs md:text-sm text-white font-bold tracking-[0.3em] uppercase mb-3">
+            Already Reserved
+          </p>
+          
+          {/* 🍏 [핵심] 유저의 이름이 있으면 "Eugene 컬렉터님,", 없으면 "컬렉터님," 으로 우아하게 출력됩니다. */}
+          <p className="text-sm md:text-base text-zinc-300 leading-relaxed break-keep font-light">
+            <strong className="text-white font-medium">{currentUser?.name ? `${currentUser.name} ` : ''}</strong>
+            컬렉터님, 이미 해당 에디션의 VIP 우선 예약이 완벽하게 완료된 상태입니다.
+          </p>
+          
+        </div>
+      )}
 
     </div>
   );

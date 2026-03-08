@@ -77,7 +77,6 @@ export default function PrivateVaultTab({
     <div className="px-6 py-10">
       
       {/* 1. 메인 디스플레이 */}
-      {/* 1. 메인 디스플레이 */}
       <div 
         className="relative group cursor-pointer transition-all duration-700 active:scale-[0.98]"
         onClick={() => {
@@ -112,7 +111,7 @@ export default function PrivateVaultTab({
               <div className="relative flex flex-col items-center gap-2">
                 
                 {/* 숨겨진 팔레트 리스트 */}
-                <div className={`absolute bottom-full mb-3 right-0 flex flex-col gap-2 p-2.5 bg-black/80 backdrop-blur-xl border border-zinc-800 rounded-full transition-all duration-500 origin-bottom ${isPaletteOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}>
+                <div className={`absolute bottom-full mb-3 right--1 flex flex-col gap-2 p-2.5 bg-black/80 backdrop-blur-xl border border-zinc-800 rounded-full transition-all duration-500 origin-bottom ${isPaletteOpen ? 'scale-100 opacity-100' : 'scale-0 opacity-0 pointer-events-none'}`}>
                   {colorPalette.map((color, i) => (
                     <button
                       key={i}

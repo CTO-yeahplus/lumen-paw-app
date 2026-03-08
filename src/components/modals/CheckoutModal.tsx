@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { track } from "@vercel/analytics"; // 상단에 임포트
 
 export interface CheckoutItem {
   id: string;
@@ -22,7 +23,7 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
     const [totalEditions, setTotalEditions] = useState<number>(100); // 🍏 분모(전체 수량) 상태 추가
     
     const isOpen = item !== null;
-  
+      
     // 🍏 1. 상품의 총 한정 수량과 현재 결제 완료된 수량을 동시에 스캔합니다.
     useEffect(() => {
       if (isOpen && item) {
@@ -62,6 +63,14 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
 
   const handleSecureEdition = async () => {
     if (!item) return;
+
+    track("checkout_initiated", { 
+      item_name: item.name, 
+      price: item.price,
+      color: dominantColor 
+    });
+  
+    console.log("결제 프로세스 진입:", item.name);
     
     // 🍏 재고 소진 방어 로직
     if (remainingCount !== null && remainingCount <= 0) {
