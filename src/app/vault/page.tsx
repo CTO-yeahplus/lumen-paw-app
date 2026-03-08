@@ -11,15 +11,18 @@ import PrivateVaultTab from "@/components/vault/PrivateVaultTab";
 import EditorialTab from "@/components/vault/EditorialTab";
 import MuseTab from "@/components/vault/MuseTab";
 import BottomNav from "@/components/navigation/BottomNav";
+import { useSearchParams } from "next/navigation"; // 🍏 1. URL 꼬리표를 읽는 훅 추가
 
 interface EditorialType { id: string; slug: string; title: string; image_url: string; content: string; }
+type TabType = "vault" | "editorial" | "muse";
 
 export default function VaultPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab") as TabType | null;
   // 🍏 탭 상태: Vault(과거), Editorial(현재), Muse(미래) 3단 체제
-  const [activeTab, setActiveTab] = useState<"vault" | "editorial" | "muse">("vault");
+  const [activeTab, setActiveTab] = useState<TabType>(tabParam || "vault");
   
   const [masterpieces, setMasterpieces] = useState<any[]>([]);
   const [activeAssetIndex, setActiveAssetIndex] = useState<number>(0);
@@ -73,22 +76,23 @@ export default function VaultPage() {
     }
   };
 
-  // 🍏 신규: 컴포넌트가 로드될 때 주소창의 꼬리표(?tab=...)를 확인하여 탭을 강제 이동시킵니다.
+  // 🍏 3. 핵심 교정: URL 꼬리표 감지 및 상태 전환
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tab = params.get("tab");
-    
-    if (tab === "editorial") {
-      setActiveTab("editorial");
-    } else if (tab === "muse") {
-      setActiveTab("muse");
+    if (tabParam) {
+      // 1. 정확한 탭으로 화면 전환
+      if (tabParam === "editorial") setActiveTab("editorial");
+      else if (tabParam === "muse") setActiveTab("muse");
+      else setActiveTab("vault");
+
+      // 2. 🍏 [핵심] Next.js 몰래 주소를 바꾸지 않고, 공식 라우터를 통해 부드럽게 꼬리표를 뗍니다.
+      // 약간의 딜레이(100ms)를 주어 탭 상태가 완벽히 렌더링된 후 주소창을 청소합니다.
+      const timeout = setTimeout(() => {
+        router.replace('/vault', { scroll: false });
+      }, 100);
+
+      return () => clearTimeout(timeout);
     }
-    
-    // 탭 이동 후에는 주소창을 깔끔하게 정리해줍니다 (선택 사항)
-    if (tab) {
-      window.history.replaceState(null, '', '/vault');
-    }
-  }, []);
+  }, [tabParam, router]);
 
   useEffect(() => {
     const fetchAllVaultData = async () => {
@@ -113,7 +117,7 @@ export default function VaultPage() {
         setActiveAssetIndex(0);
       }
 
-      const { data: edData } = await supabase.from("editorials").select("*").order("created_at", { ascending: false }).limit(2);
+      const { data: edData } = await supabase.from("editorials").select("*").order("created_at", { ascending: false });
       if (edData) setEditorials(edData);
       setIsLoading(false);
     };

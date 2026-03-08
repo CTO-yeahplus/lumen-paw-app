@@ -1,3 +1,5 @@
+// src/app/editorial/[slug]/page.tsx
+
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
@@ -12,8 +14,6 @@ export default function EditorialPage() {
   const [brandColor, setBrandColor] = useState<string>("#ffffff");
   const [palette, setPalette] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  // 현재 선택된 배경 오라(Aura) 상태
   const [activeAura, setActiveAura] = useState<string>("black");
 
   useEffect(() => {
@@ -40,15 +40,33 @@ export default function EditorialPage() {
     fetchEditorialData();
   }, [slug]);
 
+  // 🍏 모바일 네이티브 시스템 공유 모달 호출 로직
+  const handleShare = async () => {
+    const shareData = {
+      title: data?.title || "LUMEN Editorial",
+      text: "LUMEN의 프라이빗 매거진을 확인해보세요.",
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (error) {
+        console.log("공유가 취소되었거나 실패했습니다.", error);
+      }
+    } else {
+      // 데스크탑 등 지원하지 않는 환경을 위한 폴백 (클립보드 복사)
+      navigator.clipboard.writeText(window.location.href);
+      alert("링크가 복사되었습니다. 인스타그램에 공유해보세요!");
+    }
+  };
+
   if (isLoading) return <div className="min-h-screen bg-black flex items-center justify-center text-white text-xs tracking-widest animate-pulse">LOADING MASTERPIECE...</div>;
   if (!data) return <div className="min-h-screen bg-black text-white p-10">매거진을 찾을 수 없습니다.</div>;
 
   const parts = data.content.split('\n\n');
   const quote = parts.length > 0 && parts[0].startsWith('"') ? parts[0] : "";
   const bodyParts = quote ? parts.slice(1) : parts;
-
-  // 🍏 핵심 로직: 현재 선택된 오라가 'black'(초기화 상태)이면 원래의 브랜드 컬러를 쓰고, 
-  // 다른 컬러가 선택되었다면 텍스트 포인트도 그 색상으로 따라가도록 동기화합니다.
   const activeAccentColor = activeAura === "black" ? brandColor : activeAura;
 
   return (
@@ -57,34 +75,28 @@ export default function EditorialPage() {
       style={{ backgroundColor: activeAura === "black" ? "#000000" : `${activeAura}15` }}
     >
       
-      {/* 닫기 버튼 */}
       <button onClick={() => router.back()} className="fixed top-8 left-6 z-50 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center border border-white/10 hover:bg-white hover:text-black transition-all">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       </button>
 
-      {/* 매거진 풀스크린 커버 */}
       <div className="relative w-full h-[70vh] md:h-[80vh]">
         <div className="absolute inset-0 bg-cover object-cover grayscale bg-center" style={{ backgroundImage: `url('${data.image_url}')` }} />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
         
         <div className="absolute bottom-12 left-8 right-8">
-          {/* 🍏 포인트 동기화: 부제목 컬러 */}
           <span className="text-[10px] font-bold tracking-[0.4em] uppercase mb-4 block transition-colors duration-1000" style={{ color: activeAccentColor }}>
             LUMEN Editorial
           </span>
           <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tighter leading-tight text-white shadow-black drop-shadow-2xl mb-6 word-break-keep">
             {data.title}
           </h1>
-          {/* 🍏 포인트 동기화: 밑줄 컬러 */}
           <div className="w-16 h-1.5 rounded-full transition-colors duration-1000 shadow-[0_0_15px_rgba(255,255,255,0.2)]" style={{ backgroundColor: activeAccentColor }} />
         </div>
       </div>
 
-      {/* AI가 작성한 본문 */}
       <article className="px-8 py-16 md:px-24 md:py-24 max-w-3xl mx-auto">
         
         {quote && (
-          // 🍏 포인트 동기화: 인용구 좌측 테두리
           <blockquote className="mb-14 border-l-4 pl-6 py-2 transition-colors duration-1000" style={{ borderColor: activeAccentColor }}>
             <p className="text-xl md:text-2xl font-serif italic leading-relaxed text-zinc-200 word-break-keep">{quote}</p>
           </blockquote>
@@ -98,14 +110,12 @@ export default function EditorialPage() {
               return (
                 <div key={idx}>
                   <p className="text-zinc-300">
-                    {/* 🍏 포인트 동기화: 첫 글자(Drop-cap) 컬러 */}
                     <span className="float-left text-6xl font-serif mt-2 mr-4 font-bold transition-colors duration-1000" style={{ color: activeAccentColor }}>
                       {paragraph.charAt(0)}
                     </span>
                     {paragraph.substring(1)}
                   </p>
                   
-                  {/* 인터랙티브 컬러 팔레트 (The Aura Palette) */}
                   <div className="my-16 py-12 border-y border-zinc-900 flex flex-col items-center bg-zinc-950/30 rounded-3xl backdrop-blur-sm">
                     <span className="text-[9px] font-bold tracking-[0.4em] uppercase text-zinc-500 mb-8">
                       Select Your Identity Aura
@@ -172,8 +182,9 @@ export default function EditorialPage() {
       </div>
       
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
+        {/* 🍏 교체된 공유 버튼 (handleShare 실행) */}
         <button 
-          onClick={() => { navigator.clipboard.writeText(window.location.href); alert("링크가 복사되었습니다. 인스타그램에 공유해보세요!"); }}
+          onClick={handleShare}
           className="bg-black/80 backdrop-blur-xl border border-zinc-700 text-white px-8 py-4 rounded-full text-[10px] font-bold tracking-widest uppercase hover:bg-white hover:text-black transition-all shadow-[0_0_30px_rgba(0,0,0,0.8)] whitespace-nowrap"
         >
           Share this Editorial

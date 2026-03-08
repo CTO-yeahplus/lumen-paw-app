@@ -28,11 +28,15 @@ export default function AdminWaitlistPage() {
   };
 
   const updateStatus = async (id: string, newStatus: string) => {
-    // UI 즉각 반영 (Optimistic UI)
+    // 🍏 1. 상태가 변경될 유저의 데이터를 미리 찾아둡니다 (이메일 발송용)
+    const targetUser = waitlist.find(u => u.id === id);
+
+    // 2. UI 즉각 반영 (Optimistic UI)
     setWaitlist((prev) => 
       prev.map((user) => user.id === id ? { ...user, status: newStatus } : user)
     );
 
+    // 3. DB 업데이트
     const { error } = await supabase
       .from("waitlists")
       .update({ status: newStatus })
@@ -41,6 +45,28 @@ export default function AdminWaitlistPage() {
     if (error) {
       alert(`업데이트 실패: ${error.message}`);
       fetchWaitlist(); // 롤백
+    } else if (newStatus !== 'pending' && targetUser) {
+      // 🍏 4. [핵심 교정] DB 업데이트가 성공하면, 이메일 발송 웹훅을 호출합니다!
+      const joinedUser = Array.isArray(targetUser.users) ? targetUser.users[0] : targetUser.users;
+      const targetName = targetUser.contact_name || joinedUser?.full_name || 'VIP Member';
+      const targetEmail = targetUser.contact_email || joinedUser?.email;
+
+      try {
+        await fetch('/api/webhook/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: id, // 대기열 ID를 전달
+            status: newStatus, // 'contacted' 또는 'reserved'
+            customerName: targetName,
+            customerEmail: targetEmail,
+            itemName: "LUMEN VIP Private Invitation" // 대기열에 맞는 아이템 명칭 부여
+          }),
+        });
+        console.log(`🍏 Waitlist Webhook triggered for ${newStatus}`);
+      } catch (err) {
+        console.error('Failed to trigger webhook', err);
+      }
     }
   };
 

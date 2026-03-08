@@ -26,8 +26,18 @@ const statusMessages: Record<string, { title: string, desc: string, step: string
     step: "STEP 04 : DELIVERY",
     title: "Delivery Initiated",
     desc: "모든 공정을 마친 컬렉터님의 에디션이 프리미엄 패키징을 마치고 마침내 당신의 곁으로 향합니다."
-  }
-};
+  },
+  contacted: {
+    step: "VIP WAITLIST : CONTACTED",
+    title: "Private Contact",
+    desc: "귀하의 VIP 대기열 등록이 확인되었습니다. LUMEN의 전담 컨시어지가 귀하의 컬렉션 합류를 위해 조만간 프라이빗한 연락을 드릴 예정입니다. 조금만 기다려 주십시오."
+  },
+  reserved: {
+    step: "VIP WAITLIST : RESERVED",
+    title: "Invitation Confirmed",
+    desc: "축하합니다. 귀하의 LUMEN VIP 우선 예약이 최종 확정되었습니다. 정식 런칭 시, 전 세계 그 누구보다 가장 먼저 마스터피스를 소유할 수 있는 절대적인 권한이 부여됩니다."
+  },
+  };
 
 // 💎 블랙 플래티넘 HTML 이메일 제너레이터
 const generateLuxuryEmailHtml = (customerName: string, itemName: string, messageData: any) => `

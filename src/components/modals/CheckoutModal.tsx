@@ -212,55 +212,93 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
               </div>
 
               {/* 🍏 장인의 여정 (Bespoke Process) 섹션 */}
-            <div className="w-full mb-8 pt-6 border-t border-zinc-900">
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.3em]">Bespoke Journey</h3>
-                <span className="text-[9px] text-zinc-600 font-mono">{item.category === 'frame' ? 'Artisan Grade' : 'Master Craftsmanship'}</span>
-            </div>
-
-            <div className="relative flex justify-between">
-                {/* 단계별 연결선 */}
-                <div className="absolute top-4 left-0 w-full h-[1px] bg-zinc-900 z-0" />
+              <div className="w-full mb-8 pt-6 border-t border-zinc-900 relative">
                 
-                {[
-                { step: "01", label: "Consult", desc: "아우라 분석" },
-                { step: "02", label: "Craft", desc: "장인 수작업" },
-                { step: "03", label: "Inspect", desc: "품질 검수" },
-                { step: "04", label: "Deliver", desc: "품격 있는 전달" }
-                ].map((proc, idx) => (
-                <div key={idx} className="relative z-10 flex flex-col items-center group">
-                    <div 
-                    className="w-8 h-8 rounded-full bg-black border border-zinc-800 flex items-center justify-center mb-3 transition-all duration-700 group-hover:border-zinc-400"
-                    style={{ boxShadow: `0 0 15px rgba(0,0,0,1)` }}
-                    >
-                    <span className="text-[8px] font-mono text-zinc-500 group-hover:text-white">{proc.step}</span>
-                    </div>
-                    <span className="text-[9px] font-bold text-zinc-400 mb-1 uppercase tracking-tighter">{proc.label}</span>
-                    <span className="text-[8px] text-zinc-600 break-keep text-center">{proc.desc}</span>
-                    
-                    {/* 현재 진행 중인 듯한 빛의 효과 (애니메이션) */}
-                    {idx === 1 && (
-                    <div className="absolute -top-1 w-1 h-1 rounded-full bg-white animate-ping" style={{ backgroundColor: dominantColor }} />
-                    )}
-                </div>
-                ))}
-            </div>
+                {/* 💎 1. 시네마틱 궤적과 텍스트 도미노 점화를 위한 수학적 키프레임 */}
+                <style>{`
+                  @keyframes sweep-light {
+                    0% { background-position: 200% 0; }
+                    100% { background-position: -200% 0; }
+                  }
+                  /* 🍏 빛이 닿는 0.75초 동안만 글자와 노드가 공중으로 살짝 뜨며 빛을 발산합니다 */
+                  @keyframes sync-illuminate {
+                    0%, 25%, 100% { 
+                      opacity: 0.3; /* 기본 상태는 어둡게 대기 */
+                      filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
+                      transform: translateY(0) scale(1);
+                    }
+                    12.5% { 
+                      opacity: 1; /* 빛이 닿는 정점 */
+                      filter: brightness(1.5) drop-shadow(0 0 12px var(--glow-color));
+                      transform: translateY(-3px) scale(1.05);
+                    }
+                  }
+                  /* 🍏 텍스트가 점화될 때 파동(Ping)도 같은 속도로 터지게 맞춤 설계 */
+                  @keyframes custom-ping {
+                    0% { transform: scale(1); opacity: 1; }
+                    15% { transform: scale(3.5); opacity: 0; }
+                    100% { transform: scale(1); opacity: 0; }
+                  }
+                `}</style>
 
-            {/* 제작 기간 및 장인 정보 (DB 데이터 연동) */}
-            <div className="mt-8 p-4 bg-zinc-900/30 rounded-2xl border border-zinc-800/50">
-                <div className="flex items-start gap-3">
-                <div className="mt-1 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: dominantColor }} />
-                <div>
-                    <p className="text-[11px] text-zinc-300 leading-relaxed">
-                    본 에디션은 <strong>LUMEN 파트너 장인</strong>의 엄격한 기준 아래 제작됩니다.
-                    </p>
-                    <p className="text-[10px] text-zinc-500 mt-1 font-light italic">
-                    * {item.id ? '전시 현장 확인 후 즉시 제작 공정에 착수합니다.' : '제작 소요 기간: 약 2-3주'}
-                    </p>
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.3em]">Bespoke Journey</h3>
+                    <span className="text-[9px] text-zinc-600 font-mono">{item.category === 'frame' ? 'Artisan Grade' : 'Master Craftsmanship'}</span>
                 </div>
+
+                <div className="relative flex justify-between">
+                    {/* 2. 어두운 기본 뼈대 선 */}
+                    <div className="absolute top-4 left-0 w-full h-[1px] bg-zinc-900 z-0" />
+                    
+                    {/* 3. 💎 파이프라인 빛의 궤적 (3초 동안 왼쪽에서 오른쪽으로 관통) */}
+                    <div 
+                      className="absolute top-4 left-0 w-full h-[1.5px] z-0 opacity-80"
+                      style={{
+                        background: `linear-gradient(90deg, transparent 0%, ${dominantColor || '#ffffff'} 50%, transparent 100%)`,
+                        backgroundSize: '200% 100%',
+                        animation: 'sweep-light 8s linear infinite'
+                      }}
+                    />
+                    
+                    {[
+                    { step: "01", label: "Consult", desc: "아우라 분석" },
+                    { step: "02", label: "Craft", desc: "장인 수작업" },
+                    { step: "03", label: "Inspect", desc: "품질 검수" },
+                    { step: "04", label: "Deliver", desc: "품격 있는 전달" }
+                    ].map((proc, idx) => (
+                    <div 
+                      key={idx} 
+                      className="relative z-10 flex flex-col items-center group cursor-default"
+                      style={{
+                        /* 4. 💎 전체 컨테이너에 도미노 일루미네이션 적용 (2초 간격으로 점화) */
+                        '--glow-color': dominantColor || '#ffffff',
+                        animation: 'sync-illuminate 8s ease-in-out infinite',
+                        animationDelay: `${idx * 2}s`
+                      } as React.CSSProperties}
+                    >
+                        
+                        {/* 노드 원형 */}
+                        <div className="w-8 h-8 rounded-full bg-black border border-zinc-800 flex items-center justify-center mb-3 transition-colors group-hover:border-zinc-500 relative">
+                          <span className="text-[8px] font-mono text-zinc-400">{proc.step}</span>
+                        </div>
+                        
+                        {/* 텍스트 영역 (빛을 받으면 밝기(Brightness)가 증폭되며 화이트톤으로 변함) */}
+                        <span className="text-[9px] font-bold text-zinc-400 mb-1 uppercase tracking-tighter">{proc.label}</span>
+                        <span className="text-[8px] text-zinc-500 break-keep text-center">{proc.desc}</span>
+                        
+                        {/* 5. 💎 텍스트가 점화될 때 정수리에서 정확히 함께 터지는 빛의 파동 */}
+                        <div 
+                          className="absolute -top-1 w-1.5 h-1.5 rounded-full" 
+                          style={{ 
+                            backgroundColor: dominantColor || '#ffffff',
+                            animation: 'custom-ping 8s cubic-bezier(0, 0, 0.2, 1) infinite',
+                            animationDelay: `${idx * 2}s`     
+                          }} 
+                        />
+                    </div>
+                    ))}
                 </div>
-            </div>
-            </div>
+              </div>
 
               <button 
                 onClick={handleSecureEdition}
