@@ -8,6 +8,7 @@ export interface CheckoutItem {
   name: string;
   price: string;
   category?: string; // 🍏 추가!
+  imageUrl?: string;
 }
 
 interface CheckoutModalProps {
@@ -93,7 +94,8 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
         item_id: item.id,
         item_name: item.name,
         dominant_color: dominantColor || "#ffffff",
-        status: 'pending_payment'
+        status: 'pending',
+        image_url: item.imageUrl
       });
 
       if (error) throw error;

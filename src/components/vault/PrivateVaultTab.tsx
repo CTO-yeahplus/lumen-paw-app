@@ -185,7 +185,7 @@ export default function PrivateVaultTab({
 
       {/* 3. 커머스 섹션 (이제 바로 눈앞에 있습니다) */}
       <div className="mt-2">
-        <LumenCustomSection dominantColor={dominantColor} onCheckout={onCheckout} />
+        <LumenCustomSection dominantColor={dominantColor} imageUrl={displayImage} onCheckout={onCheckout} />
       </div>
 
       {/* 🍏 4. Z축 아카이브 서랍 (Bottom Sheet Modal) */}

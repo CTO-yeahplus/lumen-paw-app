@@ -5,10 +5,11 @@ import { CheckoutItem } from "@/components/modals/CheckoutModal";
 
 interface LumenCustomSectionProps {
   dominantColor: string;
+  imageUrl: string;
   onCheckout: (item: CheckoutItem) => void;
 }
 
-export default function LumenCustomSection({ dominantColor, onCheckout }: LumenCustomSectionProps) {
+export default function LumenCustomSection({ dominantColor, imageUrl, onCheckout }: LumenCustomSectionProps) {
   const [copyIndex, setCopyIndex] = useState<number>(0);
   // 🍏 어드민에서 활성화된 상품들을 담을 상태
   const [liveEditions, setLiveEditions] = useState<any[]>([]);
@@ -96,7 +97,8 @@ export default function LumenCustomSection({ dominantColor, onCheckout }: LumenC
                   id: edition.id,
                   name: edition.name,
                   price: edition.price,
-                  category: edition.category
+                  category: edition.category,
+                  imageUrl: imageUrl
                 })}
                 className="relative h-28 bg-black/60 border border-zinc-800 rounded-2xl flex flex-col items-center justify-center gap-3 hover:border-zinc-500 hover:bg-zinc-900/80 transition-all group overflow-hidden active:scale-95"
               >
