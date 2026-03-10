@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef,Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import QRScannerModal from "@/components/modals/QRScannerModal";
@@ -16,7 +16,7 @@ import { useSearchParams } from "next/navigation"; // 🍏 1. URL 꼬리표를 �
 interface EditorialType { id: string; slug: string; title: string; image_url: string; content: string; }
 type TabType = "vault" | "editorial" | "muse";
 
-export default function VaultPage() {
+function VaultContent() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
@@ -213,5 +213,18 @@ export default function VaultPage() {
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} dominantColor={dominantColor}/>
       <CheckoutModal item={checkoutItem} dominantColor={dominantColor} onClose={() => setCheckoutItem(null)} />
     </main>
+  );
+}
+
+// 💎 [핵심] Vercel의 빌드를 통과하기 위한 최상위 껍데기 (Suspense 대기실 적용)
+export default function VaultPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-[10px] tracking-widest text-zinc-500 uppercase animate-pulse">
+        Opening Private Vault...
+      </div>
+    }>
+      <VaultContent />
+    </Suspense>
   );
 }
