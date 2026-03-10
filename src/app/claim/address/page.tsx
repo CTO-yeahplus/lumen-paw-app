@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-export default function AddressClaimPage() {
+function AddressClaimContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get("order");
@@ -130,3 +130,17 @@ export default function AddressClaimPage() {
     </main>
   );
 }
+// 💎 [핵심] Vercel의 빌드를 통과하기 위한 최상위 페이지 (Suspense 대기실 적용)
+export default function AddressClaimPage() {
+    return (
+      <main className="min-h-screen bg-black text-white font-sans flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        {/* 백그라운드 아우라 효과 */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-zinc-900/40 rounded-full blur-[120px] pointer-events-none" />
+  
+        {/* 🍏 이 안의 내용물은 URL에 주문번호가 들어올 때까지 안전하게 대기합니다. */}
+        <Suspense fallback={<div className="text-[10px] tracking-widest text-zinc-500 animate-pulse z-10">LOADING SECURE VAULT...</div>}>
+          <AddressClaimContent />
+        </Suspense>
+      </main>
+    );
+  }
