@@ -15,22 +15,18 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     const checkVIPAccess = async () => {
-      // 1. 게이트 진입 시 문을 일단 잠그고 멤버십(세션)을 확인합니다.
       setIsChecking(true);
       const { data: { session } } = await supabase.auth.getSession();
 
-      // 2. 멤버십이 없는데 프라이빗 구역(/vault, /claim 등)에 들어오려 할 경우
       if (!session && !isPublicPage) {
-        router.replace("/"); // 로비로 가차 없이 쫓아냅니다.
+        router.replace("/"); 
       } else {
-        // 3. 확인 완료 (문을 엽니다)
         setIsChecking(false);
       }
     };
 
     checkVIPAccess();
 
-    // 4. 실시간 감시 카메라 (머무는 동안 로그인 만료/로그아웃 시 즉각 추방)
     const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session && !isPublicPage) {
         router.replace("/");
@@ -42,23 +38,21 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     };
   }, [pathname, router, isPublicPage]);
 
-  // 🍏 철저한 암전 (Zero Flash): 
-  // 심사 중일 때는 내부 화면을 1밀리초도 보여주지 않고 럭셔리한 로딩 점만 띄웁니다.
-  if (isChecking && !isPublicPage) {
-    return (
-      <div className="flex justify-center min-h-screen w-full bg-black">
-        <div className="flex flex-col items-center justify-center min-h-screen w-full">
-           <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-ping" />
-        </div>
-      </div>
-    );
-  }
-
   // 🍏 심사가 끝난 VIP에게만 허락되는 공간
   return (
     <div className="flex justify-center min-h-screen w-full bg-black">
       <div className={`w-full ${isAdminPage ? "" : "max-w-md shadow-2xl"} bg-zinc-950 min-h-screen relative overflow-hidden transition-all duration-500`}>
+        
+        {/* 💎 [핵심 교정] children을 자르지 않고, 그 위를 '암전 커튼'으로 완벽히 덮어버립니다. */}
+        {isChecking && !isPublicPage && (
+          <div className="absolute inset-0 z-[9999] flex flex-col items-center justify-center bg-black">
+             <div className="w-1.5 h-1.5 bg-zinc-500 rounded-full animate-ping" />
+          </div>
+        )}
+
+        {/* 🍏 Next.js의 내부 라우터가 담긴 children은 어떤 상황에서도 무조건 렌더링되어 척추를 유지합니다. */}
         {children}
+        
       </div>
     </div>
   );

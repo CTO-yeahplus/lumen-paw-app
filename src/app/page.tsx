@@ -27,11 +27,6 @@ export default function ClaimPage() {
     checkVipStatus();
   }, [router]);
 
-  // 🍏 검사하는 아주 짧은 찰나의 순간 동안 하얀 화면(플리커링)이나 로그인 버튼이 보이지 않도록 암전 처리합니다.
-  if (isChecking) {
-    return <div className="min-h-screen bg-black" />;
-  }
-
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsSyncing(false);
@@ -39,6 +34,11 @@ export default function ClaimPage() {
     }, 2500);
     return () => clearTimeout(timer);
   }, []);
+
+  // 🍏 검사하는 아주 짧은 찰나의 순간 동안 하얀 화면(플리커링)이나 로그인 버튼이 보이지 않도록 암전 처리합니다.
+  if (isChecking) {
+    return <div className="min-h-screen bg-black" />;
+  }
 
   return (
     <main className="relative w-full h-[100dvh] bg-black text-white overflow-hidden flex flex-col items-center justify-center">
