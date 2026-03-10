@@ -84,7 +84,7 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-4xl font-serif font-bold text-white mb-2 tracking-wide">Executive Dashboard</h1>
           <p className="text-zinc-500 text-xs tracking-[0.3em] uppercase">
-            LUMEN Control Tower &bull; {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          PAWTRAIT EDITION Control Tower &bull; {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
         <button 

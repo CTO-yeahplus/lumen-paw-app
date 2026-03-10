@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function POST(req: Request) {
   console.log("=====================================");
-  console.log("🚀 [LUMEN AI] 에디터 파이프라인 가동 시작");
+  console.log("🚀 [PAWTRAIT EDITION AI] 에디터 파이프라인 가동 시작");
   
   try {
     const { imageUrl, brandColor } = await req.json();

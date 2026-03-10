@@ -43,8 +43,8 @@ export default function EditorialPage() {
   // 🍏 모바일 네이티브 시스템 공유 모달 호출 로직
   const handleShare = async () => {
     const shareData = {
-      title: data?.title || "LUMEN Editorial",
-      text: "LUMEN의 프라이빗 매거진을 확인해보세요.",
+      title: data?.title || "PAWTRAIT Editorial",
+      text: "PAWTRAIT EDITION의 프라이빗 매거진을 확인해보세요.",
       url: window.location.href,
     };
 
@@ -85,7 +85,7 @@ export default function EditorialPage() {
         
         <div className="absolute bottom-12 left-8 right-8">
           <span className="text-[10px] font-bold tracking-[0.4em] uppercase mb-4 block transition-colors duration-1000" style={{ color: activeAccentColor }}>
-            LUMEN Editorial
+          PAWTRAIT Editorial
           </span>
           <h1 className="text-5xl md:text-7xl font-serif font-bold tracking-tighter leading-tight text-white shadow-black drop-shadow-2xl mb-6 word-break-keep">
             {data.title}

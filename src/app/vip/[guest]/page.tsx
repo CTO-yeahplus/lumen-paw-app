@@ -10,7 +10,7 @@ export default function VIPInvitationPage() {
   const guestData: Record<string, { name: string, title: string, color: string }> = {
     dogweek: { name: "DOGWEEK", title: "반려견 문화의 패러다임", color: "#F59E0B" }, // 앰버 (Gold)
     mitcut: { name: "MITCUT", title: "시각적 미학의 정점", color: "#3B82F6" },      // 블루 (Blue)
-    default: { name: "VIP GUEST", title: "LUMEN Private Preview", color: "#FFFFFF" }
+    default: { name: "VIP GUEST", title: "PAWTRAIT EDITION Private Preview", color: "#FFFFFF" }
   };
 
   const guest = guestData[guestId] || guestData.default;
@@ -46,7 +46,7 @@ export default function VIPInvitationPage() {
 
             <div className="w-full text-center mt-8">
               <div className="w-1 h-12 mx-auto mb-6 opacity-50" style={{ backgroundColor: guest.color }} />
-              <h1 className="text-3xl font-serif text-white tracking-widest mb-2">LUMEN</h1>
+              <h1 className="text-3xl font-serif text-white tracking-widest mb-2">PAWTRAIT EDITION</h1>
               <p className="text-[9px] text-zinc-500 uppercase tracking-[0.3em]">The Soul of Data</p>
             </div>
 

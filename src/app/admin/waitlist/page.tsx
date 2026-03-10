@@ -60,7 +60,7 @@ export default function AdminWaitlistPage() {
             status: newStatus, // 'contacted' 또는 'reserved'
             customerName: targetName,
             customerEmail: targetEmail,
-            itemName: "LUMEN VIP Private Invitation" // 대기열에 맞는 아이템 명칭 부여
+            itemName: "PAWTRAIT EDITION VIP Private Invitation" // 대기열에 맞는 아이템 명칭 부여
           }),
         });
         console.log(`🍏 Waitlist Webhook triggered for ${newStatus}`);

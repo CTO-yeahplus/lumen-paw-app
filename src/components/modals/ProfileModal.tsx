@@ -80,7 +80,7 @@ export default function ProfileModal({ isOpen, onClose, dominantColor }: Profile
             <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
               <div>
                 <div className="text-[9px] font-bold tracking-[0.3em] text-zinc-400 uppercase mb-1 drop-shadow-md">
-                  LUMEN Black Platinum
+                PAWTRAIT EDITION Black Platinum
                 </div>
                 <h3 className="text-xl font-serif text-white tracking-widest drop-shadow-md">{userData?.name || "VIP GUEST"}</h3>
               </div>

@@ -69,7 +69,7 @@ export default function LumenCustomSection({ dominantColor, imageUrl, onCheckout
           <div className="w-1.5 h-1.5 rounded-full animate-pulse shadow-[0_0_10px_currentColor]" style={{ backgroundColor: dominantColor, color: dominantColor }} />
           <h3 className="text-zinc-400 text-[9px] font-bold tracking-[0.3em] uppercase">Physical Extension</h3>
         </div>
-        <h2 className="text-2xl font-serif font-bold text-white mb-4">LUMEN Custom</h2>
+        <h2 className="text-2xl font-serif font-bold text-white mb-4">PAWTRAIT EDITION Custom</h2>
         
         <p className="text-xs text-zinc-400 font-light leading-[1.8] mb-8 word-break-keep transition-opacity duration-1000">
           <strong className="text-white font-serif italic text-sm block mb-3">{currentCopy.quote}</strong>

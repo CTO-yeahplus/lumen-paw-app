@@ -70,7 +70,7 @@ export default function QRScannerModal({ isOpen, onClose, onScanSuccess }: QRSca
       <div className="absolute top-12 left-6 right-6 flex justify-between items-center z-50">
         <div>
           <h2 className="text-white font-bold tracking-widest text-sm uppercase">Scan Masterpiece</h2>
-          <p className="text-zinc-500 text-[10px] tracking-[0.2em] uppercase mt-1">LUMEN Vision Sensor</p>
+          <p className="text-zinc-500 text-[10px] tracking-[0.2em] uppercase mt-1">PAWTRAIT EDITION Vision Sensor</p>
         </div>
         <button 
           onClick={onClose} 

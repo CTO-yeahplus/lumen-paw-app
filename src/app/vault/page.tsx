@@ -72,7 +72,7 @@ function VaultContent() {
       router.push(`/claim?source_url=${encodeURIComponent(decodedText)}`);
     } else {
       // 2. 실패 시 렌즈가 무엇을 보았는지 정확히 출력합니다 (원인 파악용)
-      alert(`🚨 렌즈가 인식한 텍스트:\n\n${decodedText}\n\nLUMEN과 호환되지 않는 QR 코드입니다.`);
+      alert(`🚨 렌즈가 인식한 텍스트:\n\n${decodedText}\n\nPAWTRAIT EDITION과 호환되지 않는 QR 코드입니다.`);
     }
   };
 
@@ -138,7 +138,7 @@ function VaultContent() {
       <header className="px-6 pt-16 pb-6 flex justify-between items-end bg-black/80 backdrop-blur-xl sticky top-0 z-40 border-b border-zinc-900">
         <div>
           <h2 className="text-zinc-500 text-[9px] font-bold tracking-[0.4em] uppercase mb-1">
-            {activeTab === "vault" ? "Private Vault" : activeTab === "editorial" ? "LUMEN Magazine" : "The Future Vision"}
+            {activeTab === "vault" ? "Private Vault" : activeTab === "editorial" ? " Magazine" : "The Future Vision"}
           </h2>
           <h1 className="text-3xl font-extrabold tracking-tight">
             {activeTab === "vault" ? "Masterpieces" : activeTab === "editorial" ? "Story" : "Muse"}

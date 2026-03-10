@@ -196,7 +196,7 @@ function AIEditorContent() {
       {/* Top Navigation */}
       <nav className="sticky top-0 z-50 h-16 border-b border-zinc-800 flex items-center justify-between px-6 lg:px-12 bg-black/80 backdrop-blur-xl">
         <div className="flex items-center gap-3 md:gap-4">
-          <span className="text-white font-bold tracking-tighter text-sm md:text-lg">LUMEN STUDIO</span>
+          <span className="text-white font-bold tracking-tighter text-sm md:text-lg">PAWTRAIT EDITION STUDIO</span>
           <span className="h-4 w-px bg-zinc-800"></span>
           <span className="text-[9px] md:text-[10px] font-bold tracking-widest text-zinc-500 uppercase hidden md:inline-block">AI Editorial Desk</span>
         </div>
@@ -344,7 +344,7 @@ function AIEditorContent() {
                       <div className="absolute inset-0 bg-cover bg-center transition-all duration-700" style={{ backgroundImage: `url('${imageUrl || "/images/img_01.png"}')` }} />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/40 to-transparent" />
                       <div className="absolute bottom-6 left-6 right-6">
-                        <p className="text-[8px] font-bold tracking-[0.4em] uppercase mb-2 transition-colors duration-1000" style={{ color: brandColor || "#a1a1aa" }}>LUMEN EDITORIAL</p>
+                        <p className="text-[8px] font-bold tracking-[0.4em] uppercase mb-2 transition-colors duration-1000" style={{ color: brandColor || "#a1a1aa" }}>PAWTRAIT EDITORIAL</p>
                         <h1 className="text-3xl font-serif font-bold text-white leading-[1.1] shadow-black drop-shadow-2xl mb-4 line-clamp-3">{title || "THE MASTERPIECE"}</h1>
                         <div className="w-10 h-1 rounded-full transition-colors duration-1000" style={{ backgroundColor: brandColor || "#ffffff" }} />
                       </div>

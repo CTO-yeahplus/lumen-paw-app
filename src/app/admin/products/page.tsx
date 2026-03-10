@@ -94,7 +94,7 @@ export default function EditionDropDesk() {
       {/* Top Navigation */}
       <nav className="sticky top-0 z-50 h-16 border-b border-zinc-800 flex items-center justify-between px-8 lg:px-12 bg-black/80 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <span className="text-white font-bold tracking-tighter text-sm md:text-lg">LUMEN CONCIERGE</span>
+          <span className="text-white font-bold tracking-tighter text-sm md:text-lg">PAWTRAIT CONCIERGE</span>
           <span className="h-4 w-px bg-zinc-800"></span>
           <span className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">Edition Drop Manager</span>
         </div>
@@ -124,7 +124,7 @@ export default function EditionDropDesk() {
 
               <div>
                 <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Edition Title (상품명)</label>
-                <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g., LUMEN Signature Art Frame" className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors" />
+                <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g., PAWTRAIT EDITION Signature Art Frame" className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors" />
               </div>
 
 

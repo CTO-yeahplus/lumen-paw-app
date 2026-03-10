@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 
 export async function POST(req: Request) {
   console.log("=====================================");
-  console.log("🚀 [LUMEN S3] 데이터 추출 파이프라인 가동");
+  console.log("🚀 [PAWTRAIT EDITION S3] 데이터 추출 파이프라인 가동");
 
   try {
     const { sourceUrl } = await req.json();

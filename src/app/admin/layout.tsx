@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           {/* 로고 영역 */}
           <div className="h-24 flex items-center px-8 border-b border-zinc-900">
             <h1 className="text-xl font-serif tracking-[0.3em] uppercase text-white">
-              LUMEN<span className="text-zinc-600 text-[9px] ml-2 font-sans tracking-widest font-bold">ADMIN</span>
+            PAWTRAIT EDITION<span className="text-zinc-600 text-[9px] ml-2 font-sans tracking-widest font-bold">ADMIN</span>
             </h1>
           </div>
 

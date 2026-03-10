@@ -111,7 +111,7 @@ export default function PrivateArchiveModal({ isOpen, onClose, dominantColor }: 
                   <div key={mp.id} className="relative aspect-[3/4] rounded-2xl overflow-hidden group border border-zinc-800 shadow-xl">
                     <img 
                         src={mp.display_url} /* 🍏 이제 완벽한 주소가 여기에 들어갑니다 */
-                        alt={mp.pet_name || "LUMEN Aura"} 
+                        alt={mp.pet_name || "PAWTRAIT EDITION Aura"} 
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
                         onError={(e) => {
                             // 🍏 만약의 오류에도 엑스박스가 뜨지 않도록 우아하게 감춤
@@ -177,7 +177,7 @@ export default function PrivateArchiveModal({ isOpen, onClose, dominantColor }: 
                         {[
                           { step: 1, label: "Aura Confirmed", desc: "결제 및 아우라 데이터 확정" },
                           { step: 2, label: "Master Crafting", desc: "장인 수작업 진행 중" },
-                          { step: 3, label: "Quality Control", desc: "LUMEN 최종 검수" },
+                          { step: 3, label: "Quality Control", desc: "PAWTRAIT EDITION 최종 검수" },
                           { step: 4, label: "Delivery", desc: "품격 있는 전달" }
                         ].map((process) => (
                           <div key={process.step} className="flex items-start gap-4">

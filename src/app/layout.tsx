@@ -8,13 +8,39 @@ const inter = Inter({ subsets: ["latin"] });
 
 // 🍏 서버 컴포넌트에서만 허용되는 Metadata (정상 작동)
 export const metadata: Metadata = {
-  title: "LUMEN",
-  description: "My Private Vault",
+  title: "pawtraitedition",
+  description: "당신의 반려동물을 위한 단 하나의 비스포크 마스터피스",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "LUMEN",
+    title: "pawtraitedition",
+  },
+  
+  // 💎 [핵심] 링크 공유 시 보여질 황금빛 초대장 세팅 (Open Graph)
+  openGraph: {
+    title: "pawtraitedition",
+    description: "당신의 반려동물을 위한 단 하나의 비스포크 마스터피스",
+    url: "https://pawtraitedition.com",
+    siteName: "pawtraitedition",
+    images: [
+      {
+        url: "https://pawtraitedition.com/images/og-image.png", // Step 1에서 저장한 이미지 경로
+        width: 1200,
+        height: 630,
+        alt: "Pawtrait Edition Bespoke Pet Masterpiece",
+      },
+    ],
+    locale: "ko_KR",
+    type: "website",
+  },
+  
+  // (선택) 트위터 등 일부 플랫폼을 위한 세팅
+  twitter: {
+    card: "summary_large_image",
+    title: "pawtraitedition",
+    description: "당신의 반려동물을 위한 단 하나의 비스포크 마스터피스",
+    images: ["https://pawtraitedition.com/images/og-image.png"],
   },
 };
 

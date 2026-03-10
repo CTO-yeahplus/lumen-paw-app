@@ -28,7 +28,7 @@ export default function EditorialTab({ editorials }: { editorials: EditorialType
   return (
     <div className="px-6 py-10 border-t border-zinc-900 bg-black">
       <div className="mb-12 text-center">
-        <h3 className="text-white text-2xl font-serif font-bold tracking-tight mb-2">LUMEN Editorial</h3>
+        <h3 className="text-white text-2xl font-serif font-bold tracking-tight mb-2">PAWTRAIT Editorial</h3>
         <p className="text-zinc-500 text-[10px] tracking-[0.4em] uppercase">The Brand Storytelling</p>
       </div>
       

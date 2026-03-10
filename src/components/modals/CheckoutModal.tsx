@@ -345,7 +345,7 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
                 <p className="text-sm text-zinc-300 font-light leading-relaxed break-keep">
                   고객님의 에디션 1개가 <strong className="text-white font-bold">성공적으로 홀딩(선점)</strong> 되었습니다. 
                   <br/><br/>
-                  페어 현장에 위치한 <strong className="text-white font-bold text-blue-400">LUMEN 컨시어지 데스크</strong>에 
+                  페어 현장에 위치한 <strong className="text-white font-bold text-blue-400">PAWTRAIT EDITION 컨시어지 데스크</strong>에 
                   이 화면을 보여주시고 결제를 완료하여 소유권을 최종 확정해 주십시오.
                 </p>
               </div>

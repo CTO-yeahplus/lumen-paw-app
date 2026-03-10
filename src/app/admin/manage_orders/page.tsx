@@ -206,7 +206,7 @@ export default function AdminOrdersPage() {
                           <option value="pending">0. Pending (결제 대기)</option>
                           <option value="pending_payment">1. 결제/데이터 확인</option>
                           <option value="crafting">2. 장인 수작업 중</option>
-                          <option value="qc_inspect">3. LUMEN 품질 검수</option>
+                          <option value="qc_inspect">3. PAWTRAIT EDITION 품질 검수</option>
                           <option value="shipping">4. 배송 및 패키징</option>
                         </select>
                       </td>

@@ -92,7 +92,7 @@ export default function LoginModal({ isOpen, onClose, isFromQR = false }: LoginM
             )}
           </h2>
           <p className="text-zinc-400 text-sm">
-            {isFromQR ? "로그인하여 디지털 금고를 열어주십시오." : "LUMEN 멤버십 인증을 진행해 주십시오."}
+            {isFromQR ? "로그인하여 디지털 금고를 열어주십시오." : "PAWTRAIT EDITION 멤버십 인증을 진행해 주십시오."}
           </p>
         </div>
 

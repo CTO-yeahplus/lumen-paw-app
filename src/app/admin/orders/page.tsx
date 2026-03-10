@@ -77,7 +77,7 @@ export default function ConciergeDesk() {
       {/* Top Navigation */}
       <nav className="sticky top-0 z-50 h-16 border-b border-zinc-800 flex items-center justify-between px-6 lg:px-12 bg-black/80 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <span className="text-white font-bold tracking-tighter text-sm md:text-lg">LUMEN CONCIERGE</span>
+          <span className="text-white font-bold tracking-tighter text-sm md:text-lg">PAWTRAIT CONCIERGE</span>
           <span className="h-4 w-px bg-zinc-800"></span>
           <span className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">Live Allocation Desk</span>
         </div>
