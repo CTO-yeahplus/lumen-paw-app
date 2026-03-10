@@ -135,7 +135,15 @@ export default function LoginModal({ isOpen, onClose, isFromQR = false }: LoginM
             )}
           </button>
         </div>
-        
+
+        {/* 🍏 기존 로그인 버튼들 (Google, Kakao 등) 아래에 배치합니다 */}
+        <div className="mt-8 pt-6 border-t border-zinc-900/50 text-center px-2">
+          <p className="text-[10px] text-zinc-500 font-light leading-relaxed break-keep tracking-wide">
+            카카오톡 등 앱 내 브라우저에서는 구글 보안 정책으로 로그인이 제한될 수 있습니다.<br className="hidden sm:block" />
+            <strong className="text-zinc-300 font-bold tracking-widest">카카오톡 화면 우측 하단의 [ ⋮ ] 버튼</strong>을 눌러<br className="hidden sm:block" /> 
+            '다른 브라우저로 열기'를 선택해 주십시오.
+          </p>
+        </div>
         <p className="text-center text-zinc-600 text-[10px] mt-6">가입 시 이용약관 및 개인정보 처리방침에 동의하게 됩니다.</p>
       </div>
     </div>

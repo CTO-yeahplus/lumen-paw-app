@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CheckoutItem } from "@/components/modals/CheckoutModal";
 import LumenCustomSection from "@/components/vault/LumenCustomSection";
+import Image from "next/image"; // 🍏 파일 맨 위에 추가
 
 interface PrivateVaultTabProps {
   masterpieces: any[];
@@ -209,6 +210,28 @@ export default function PrivateVaultTab({
           <ul className="flex flex-col max-h-[50vh] overflow-y-auto scrollbar-hide pr-2">
             {masterpieces.map((mp, idx) => {
               const isActive = activeAssetIndex === idx;
+              // 🍏 [핵심 수술] 어떤 기형적인 데이터가 들어와도 완벽하게 걸러내는 3중 방어막
+              let thumbUrl = '/images/img_01.png'; // 1. 기본값 세팅
+              // 🍏 첫 번째 이미지를 썸네일로 사용 (없으면 기본 이미지)
+              try {
+                if (Array.isArray(mp.images) && mp.images.length > 0 && mp.images[0]) {
+                  thumbUrl = mp.images[0]; // 정상적인 배열일 경우
+                } else if (typeof mp.images === 'string') {
+                  // DB에서 텍스트(JSON)로 꼬여서 넘어왔을 경우를 대비한 파싱
+                  const parsed = JSON.parse(mp.images);
+                  if (Array.isArray(parsed) && parsed.length > 0 && parsed[0]) {
+                    thumbUrl = parsed[0];
+                  }
+                }
+                
+                // 최종 검문: URL이 http나 / 로 시작하지 않는 이상한 문자열이면 기본값으로 강제 회귀
+                if (typeof thumbUrl !== 'string' || (!thumbUrl.startsWith('http') && !thumbUrl.startsWith('/'))) {
+                  thumbUrl = '/images/img_01.png';
+                }
+              } catch (e) {
+                // 파싱하다 에러가 나도 화면을 터뜨리지 않고 조용히 기본 이미지를 띄웁니다.
+                thumbUrl = '/images/img_01.png';
+              }
               return (
                 <li 
                   key={mp.id} 
@@ -225,16 +248,36 @@ export default function PrivateVaultTab({
                     <span className="font-mono text-[10px] opacity-50">
                       {(masterpieces.length - idx).toString().padStart(2, '0')}
                     </span>
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className={`w-2 h-2 rounded-full transition-opacity duration-500 ${isActive ? 'opacity-100 shadow-[0_0_10px_currentColor]' : 'opacity-0 group-hover:opacity-50'}`} 
-                        style={{ backgroundColor: mp.dominant_color || '#ffffff', color: mp.dominant_color || '#ffffff' }}
+
+                    {/* 💎 추가된 썸네일 렌즈 구역 */}
+                    <div className={`relative w-10 h-12 rounded-lg overflow-hidden shrink-0 border transition-all duration-500 ${isActive ? 'border-zinc-500 shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'border-zinc-800 opacity-60 group-hover:opacity-100'}`}>
+                      <Image 
+                        src={thumbUrl} 
+                        alt="Asset Thumbnail" 
+                        fill
+                        sizes="40px"
+                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-700" 
                       />
-                      <span className={`tracking-widest text-[12px] uppercase ${isActive ? 'font-bold' : 'font-medium'}`}>
-                        ASSET-{mp.id.substring(0,4).toUpperCase()}
+                      {/* 아우라 컬러 틴트 오버레이 */}
+                      <div className="absolute inset-0 opacity-20 mix-blend-color" style={{ backgroundColor: mp.dominant_color || '#ffffff' }} />
+                    </div>
+
+                    <div className="flex flex-col gap-1 ml-2">
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className={`w-1.5 h-1.5 rounded-full transition-all duration-500 ${isActive ? 'scale-125 shadow-[0_0_10px_currentColor]' : 'opacity-50 group-hover:opacity-100'}`} 
+                          style={{ backgroundColor: mp.dominant_color || '#ffffff', color: mp.dominant_color || '#ffffff' }}
+                        />
+                        <span className={`tracking-widest text-[11px] uppercase ${isActive ? 'font-bold' : 'font-medium'}`}>
+                          ASSET-{mp.id.substring(0,4).toUpperCase()}
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-zinc-500 font-mono pl-3.5">
+                        {mp.pet_name || "UNKNOWN"}
                       </span>
                     </div>
                   </div>
+
                   <span className="text-[10px] font-mono opacity-60">
                     {formatDate(mp.created_at)}
                   </span>

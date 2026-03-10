@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/layout/LayoutWrapper"; // 🍏 새로 만들 컴포넌트
 import { Analytics } from "@vercel/analytics/next"; // 🍏 1. Analytics 임포트
+import KakaoEscape from "@/components/layout/KakaoEscape"; // 🍏 1. 요원 호출
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -59,6 +60,8 @@ export default function RootLayout({
   return (
     <html lang="ko" className="dark">
       <body className={`${inter.className} bg-black text-white min-h-screen`}>
+        {/* 🍏 2. 투명한 카카오톡 강제 탈출 스크립트 가동 */}
+        <KakaoEscape />
         {/* 🍏 너비 조절 로직만 전담하는 클라이언트 래퍼로 감쌉니다. */}
         <LayoutWrapper>
           {children}

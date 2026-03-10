@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef,Suspense } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import QRScannerModal from "@/components/modals/QRScannerModal";
 
@@ -11,7 +11,6 @@ import PrivateVaultTab from "@/components/vault/PrivateVaultTab";
 import EditorialTab from "@/components/vault/EditorialTab";
 import MuseTab from "@/components/vault/MuseTab";
 import BottomNav from "@/components/navigation/BottomNav";
-import { useSearchParams } from "next/navigation"; // 🍏 1. URL 꼬리표를 읽는 훅 추가
 
 interface EditorialType { id: string; slug: string; title: string; image_url: string; content: string; }
 type TabType = "vault" | "editorial" | "muse";
@@ -20,6 +19,8 @@ function VaultContent() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
+  // 🍏 1. 현재 주소('/vault')를 정확히 파악합니다.
+  const pathname = usePathname();
   const tabParam = searchParams.get("tab") as TabType | null;
   // 🍏 탭 상태: Vault(과거), Editorial(현재), Muse(미래) 3단 체제
   const [activeTab, setActiveTab] = useState<TabType>(tabParam || "vault");
@@ -86,13 +87,21 @@ function VaultContent() {
 
       // 2. 🍏 [핵심] Next.js 몰래 주소를 바꾸지 않고, 공식 라우터를 통해 부드럽게 꼬리표를 뗍니다.
       // 약간의 딜레이(100ms)를 주어 탭 상태가 완벽히 렌더링된 후 주소창을 청소합니다.
-      const timeout = setTimeout(() => {
-        router.replace('/vault', { scroll: false });
-      }, 100);
+      //const timeout = setTimeout(() => {
+      //  router.replace('/vault', { scroll: false });
+      //}, 100);
 
-      return () => clearTimeout(timeout);
+      //return () => clearTimeout(timeout);
     }
   }, [tabParam, router]);
+
+  // 🍏 2. 탭 이동 함수 교정
+  const handleTabChange = (newTab: TabType) => {
+    setActiveTab(newTab);
+    // 💎 [핵심] 그냥 '?tab=muse'가 아니라, '/vault?tab=muse' 형식으로 정확히 꽂아줍니다!
+    router.push(`${pathname}?tab=${newTab}`, { scroll: false }); 
+  };
+
 
   useEffect(() => {
     const fetchAllVaultData = async () => {
@@ -205,7 +214,7 @@ function VaultContent() {
       {/* 🍏 네비게이션 모듈화 적용 */}
       <BottomNav 
         activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
+        setActiveTab={handleTabChange}
         onScanClick={() => setIsScanning(true)} 
       />
 
