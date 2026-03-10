@@ -12,29 +12,22 @@ export default function EditionDropDesk() {
   const [products, setProducts] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 1. 상태 추가
-  const [formData, setFormData] = useState({
+  // 🍏 Edit 모드를 판별하는 상태 (어떤 상품을 수정 중인지 추적)
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
+  const initialFormState = {
     id: "",
     name: "",
     price: "₩ ",
     total_editions: 100,
-    category: "case", // 🍏 기본 카테고리
+    category: "case",
     craftsmanship: "이탈리아산 프리미엄 베지터블 레더",
     lead_time: "주문 확인 후 장인의 수작업으로 3주 소요"
-  });
-  const [isCustomCategory, setIsCustomCategory] = useState(false);
-
-  // 🍏 상품 전시 상태 토글 (Publish / Unpublish)
-  const toggleActiveStatus = async (id: string, currentStatus: boolean) => {
-    const { error } = await supabase
-      .from('products')
-      .update({ is_active: !currentStatus })
-      .eq('id', id);
-    
-    if (!error) fetchProducts();
   };
 
-  // 권한 체크 및 목록 불러오기
+  const [formData, setFormData] = useState(initialFormState);
+  const [isCustomCategory, setIsCustomCategory] = useState(false);
+
   useEffect(() => {
     const checkAdminAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -55,26 +48,67 @@ export default function EditionDropDesk() {
     if (data) setProducts(data);
   };
 
+  const toggleActiveStatus = async (id: string, currentStatus: boolean) => {
+    const { error } = await supabase.from('products').update({ is_active: !currentStatus }).eq('id', id);
+    if (!error) fetchProducts();
+  };
+
+  // 🍏 수정 버튼을 눌렀을 때 폼(Form)에 해당 데이터를 밀어 넣는 함수
+  const handleEditClick = (product: any) => {
+    setEditingProductId(product.id); // 수정 모드 ON
+    setIsCustomCategory(!['case', 'frame', 'collar', 'wallet', 'harness', 'keyring', 'pendant', 'strap'].includes(product.category));
+    setFormData({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      total_editions: product.total_editions,
+      category: product.category || "case",
+      craftsmanship: product.craftsmanship || "",
+      lead_time: product.lead_time || ""
+    });
+    // 스크롤을 맨 위로 올려 폼을 보여줌
+    window.scrollTo({ top: 0, behavior: "smooth" }); 
+  };
+
+  // 🍏 취소 버튼 (수정 모드 해제)
+  const handleCancelEdit = () => {
+    setEditingProductId(null);
+    setFormData(initialFormState);
+    setIsCustomCategory(false);
+  };
+
   const handleDropEdition = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.id || !formData.name || !formData.price) {
+    if (!formData.id || !formData.name || !formData.price || formData.price === "₩ ") {
       alert("필수 정보를 모두 입력해주십시오.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('products').insert([formData]);
-      if (error) {
-        if (error.code === '23505') throw new Error("이미 존재하는 에디션 ID입니다.");
-        throw error;
+      if (editingProductId) {
+        // 💎 수정 모드일 때 (Update)
+        const { error } = await supabase
+          .from('products')
+          .update(formData)
+          .eq('id', editingProductId); // 기존 ID를 찾아 덮어씁니다.
+          
+        if (error) throw error;
+        alert("에디션 정보가 성공적으로 수정되었습니다.");
+      } else {
+        // 💎 생성 모드일 때 (Insert)
+        const { error } = await supabase.from('products').insert([formData]);
+        if (error) {
+          if (error.code === '23505') throw new Error("이미 존재하는 에디션 ID입니다.");
+          throw error;
+        }
+        alert("새로운 에디션이 성공적으로 런칭되었습니다.");
       }
       
-      alert("새로운 에디션이 성공적으로 런칭되었습니다.");
-      setFormData({ ...formData, id: "", name: "", price: "₩ " }); // 폼 초기화
+      handleCancelEdit(); // 폼 초기화 및 수정 모드 해제
       fetchProducts(); // 리스트 새로고침
     } catch (error: any) {
-      alert(error.message || "에디션 런칭 중 오류가 발생했습니다.");
+      alert(error.message || "작업 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -90,8 +124,6 @@ export default function EditionDropDesk() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans pb-32">
-      
-      {/* Top Navigation */}
       <nav className="sticky top-0 z-50 h-16 border-b border-zinc-800 flex items-center justify-between px-8 lg:px-12 bg-black/80 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <span className="text-white font-bold tracking-tighter text-sm md:text-lg">PAWTRAIT CONCIERGE</span>
@@ -107,19 +139,30 @@ export default function EditionDropDesk() {
 
       <main className="w-full px-8 lg:px-12 py-10 flex flex-col lg:flex-row gap-12">
         
-        {/* 🍏 좌측: 새로운 에디션 기획 (Launch Pad) */}
+        {/* 🍏 좌측: 폼 (생성/수정 모드) */}
         <section className="w-full lg:w-1/3">
           <div className="sticky top-24">
             <header className="mb-8">
-              <h1 className="text-3xl font-serif font-bold text-white mb-2">Launch Edition</h1>
-              <p className="text-xs text-zinc-500 tracking-widest uppercase">새로운 비스포크 상품 런칭</p>
+              <h1 className="text-3xl font-serif font-bold text-white mb-2">
+                {editingProductId ? "Edit Masterpiece" : "Launch Edition"}
+              </h1>
+              <p className="text-xs text-zinc-500 tracking-widest uppercase">
+                {editingProductId ? `수정 중: ${editingProductId}` : "새로운 비스포크 상품 런칭"}
+              </p>
             </header>
 
             <form onSubmit={handleDropEdition} className="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 flex flex-col gap-6 shadow-2xl">
               
               <div>
                 <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Edition ID (영문/숫자 고유값)</label>
-                <input type="text" value={formData.id} onChange={e => setFormData({...formData, id: e.target.value})} placeholder="e.g., silver_frame_01" className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors" />
+                <input 
+                  type="text" 
+                  value={formData.id} 
+                  onChange={e => setFormData({...formData, id: e.target.value})} 
+                  disabled={editingProductId !== null} // 수정 모드일 때는 ID 변경 불가
+                  placeholder="e.g., silver_frame_01" 
+                  className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors disabled:opacity-50" 
+                />
               </div>
 
               <div>
@@ -127,7 +170,17 @@ export default function EditionDropDesk() {
                 <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g., PAWTRAIT EDITION Signature Art Frame" className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors" />
               </div>
 
-
+              {/* 💎 잃어버렸던 가격(Price) 입력란 부활 */}
+              <div>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Price (가격 텍스트)</label>
+                <input 
+                  type="text" 
+                  value={formData.price} 
+                  onChange={e => setFormData({...formData, price: e.target.value})} 
+                  placeholder="₩ 120,000" 
+                  className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors font-mono" 
+                />
+              </div>
 
               <div className="grid grid-cols-1 gap-4">
                 <div>
@@ -148,17 +201,14 @@ export default function EditionDropDesk() {
                     <option value="case">Phone Case (케이스)</option>
                     <option value="frame">Art Frame (액자)</option>
                     <option value="collar">Pet Collar (목줄)</option>
-                    {/* 🍏 새롭게 추가된 럭셔리 라인업 */}
                     <option value="wallet">Card Wallet (카드지갑)</option>
                     <option value="harness">Pet Harness (하네스)</option>
                     <option value="keyring">Keyring (키링)</option>
                     <option value="pendant">Name Pendant (팬던트)</option>
-                    {/* 🍏 새롭게 추가된 스트랩 라인업 */}
                     <option value="strap">Leather Strap (가죽 스트랩)</option>
                     <option value="custom">+ 새로운 카테고리 생성</option>
                   </select>
                   
-                  {/* 직접 입력 시 나타나는 인풋 */}
                   {isCustomCategory && (
                     <input 
                       type="text" 
@@ -181,9 +231,16 @@ export default function EditionDropDesk() {
                 <input type="text" value={formData.lead_time} onChange={e => setFormData({...formData, lead_time: e.target.value})} className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors" />
               </div>
 
-              <button disabled={isSubmitting} className="w-full bg-white text-black font-extrabold text-xs uppercase tracking-[0.2em] py-4 rounded-xl mt-4 active:scale-95 transition-all">
-                {isSubmitting ? "Launching..." : "Drop Edition"}
-              </button>
+              <div className="flex gap-3 mt-4">
+                {editingProductId && (
+                  <button type="button" onClick={handleCancelEdit} className="w-1/3 bg-transparent border border-zinc-700 text-zinc-400 font-bold text-xs uppercase tracking-widest py-4 rounded-xl hover:text-white hover:bg-zinc-800 transition-all">
+                    Cancel
+                  </button>
+                )}
+                <button disabled={isSubmitting} className="flex-1 bg-white text-black font-extrabold text-xs uppercase tracking-[0.2em] py-4 rounded-xl active:scale-95 transition-all">
+                  {isSubmitting ? "Processing..." : editingProductId ? "Update Edition" : "Drop Edition"}
+                </button>
+              </div>
             </form>
           </div>
         </section>
@@ -197,11 +254,13 @@ export default function EditionDropDesk() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {products.map(product => (
-              <div key={product.id} className={`bg-zinc-950 border rounded-3xl p-6 relative group transition-all duration-300 ${product.is_active ? 'border-zinc-700 shadow-[0_0_20px_rgba(255,255,255,0.05)]' : 'border-zinc-800 opacity-50'}`}>
-                
+              <div 
+                key={product.id} 
+                // 수정 중인 상품은 시각적으로 하이라이트 (테두리 강조)
+                className={`bg-zinc-950 border rounded-3xl p-6 relative group transition-all duration-300 ${editingProductId === product.id ? 'border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]' : product.is_active ? 'border-zinc-700 shadow-[0_0_20px_rgba(255,255,255,0.05)]' : 'border-zinc-800 opacity-50'}`}
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-3">
-                    {/* 🍏 전시 상태 토글 스위치 */}
                     <button 
                       onClick={() => toggleActiveStatus(product.id, product.is_active)}
                       className={`w-12 h-6 rounded-full p-1 transition-colors duration-300 ${product.is_active ? 'bg-green-500' : 'bg-zinc-800'}`}
@@ -213,7 +272,11 @@ export default function EditionDropDesk() {
                     </span>
                   </div>
                   
-                  <button onClick={() => handleDelete(product.id)} className="text-zinc-600 hover:text-red-500 transition-colors text-xs font-bold">Delete</button>
+                  <div className="flex items-center gap-4">
+                    {/* 💎 잃어버렸던 Edit 버튼 부활 */}
+                    <button onClick={() => handleEditClick(product)} className="text-blue-500 hover:text-white transition-colors text-xs font-bold tracking-widest uppercase">Edit</button>
+                    <button onClick={() => handleDelete(product.id)} className="text-zinc-600 hover:text-red-500 transition-colors text-xs font-bold tracking-widest uppercase">Delete</button>
+                  </div>
                 </div>
                 
                 <h3 className="text-lg font-bold text-white mb-1">{product.name}</h3>

@@ -101,11 +101,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, message: "알림 대상 상태가 아님" });
     }
 
-    // 🍏 [핵심 교정] 이메일 생성기에 주문 ID(orderId)를 넘겨주기 위해 객체를 결합합니다.
+    // 🍏 [핵심] 이메일 생성기에 주문 ID(orderId)를 넘겨주기 위해 객체를 결합합니다.
     const messageData = { ...statusMessages[status], orderId };
     
-    // 수신자 강제 세팅 (라이브 시 customerEmail 로 변경 필요)
-    const targetEmail = "cto@yeahplus.co.kr"; 
+    // 💎 [라이브 전환] 하드코딩된 이메일을 지우고 고객의 실제 이메일을 타겟으로 지정합니다.
+    const targetEmail = customerEmail; 
+
+    // 이메일 주소가 없는 고객을 위한 안전 장치
+    if (!targetEmail) {
+      console.error("수신자 이메일 정보가 누락되었습니다.");
+      return NextResponse.json({ success: false, error: "No target email provided" }, { status: 400 });
+    }
 
     const { data, error } = await resend.emails.send({
       from: 'PAWTRAIT EDITION Concierge <concierge@pawtraitedition.com>',

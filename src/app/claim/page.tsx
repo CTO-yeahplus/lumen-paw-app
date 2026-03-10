@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import LoginModal from "@/components/modals/LoginModal";
+import Image from "next/image"; // 🍏 파일 맨 위에 추가
 
 function ClaimContent() {
   const router = useRouter();
@@ -108,7 +109,10 @@ function ClaimContent() {
       if (error) throw error;
 
       // 💎 완벽하게 저장되면 금고 화면으로 리다이렉트
-      router.push("/vault");
+      //router.push("/vault");
+      
+      // 💎 [수정 후] 현재의 /claim 방문 기록을 /vault로 덮어씌워 버립니다!
+      router.replace("/vault");
       
     } catch (error: any) {
       alert(`저장에 실패했습니다: ${error.message}`);
@@ -179,8 +183,14 @@ function ClaimContent() {
                   <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-sm z-10 text-[8px] font-mono tracking-widest text-zinc-300">
                     IMG_{String(idx + 1).padStart(2, '0')}
                   </div>
-                  <img src={imgUrl} alt={`Extracted ${idx}`} className={`w-full h-full object-cover transition-all duration-700 ${isSelected ? 'grayscale-0' : 'grayscale'}`} />
-                </div>
+                    <Image 
+                    src={imgUrl} 
+                    alt={`Extracted ${idx}`} 
+                    width={1500} 
+                    height={1000} 
+                    quality={85} // 화질 85% (육안으로 차이 없으나 용량은 1/10)
+                    className="w-full h-full object-cover transition-all duration-700" 
+                    />                </div>
               );
             })}
           </div>
