@@ -8,18 +8,18 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const statusMessages: Record<string, { title: string, desc: string, step: string }> = {
   pending_payment: {
     step: "STEP 01 : PAYMENT CONFIRMED",
-    title: "Payment Confirmed",
+    title: "결제 완료(Payment Confirmed)",
     desc: "귀하께서 주문하신 결제 내역과 비스포크 데이터가 완벽하게 확인되었습니다. 이제 PAWTRAIT EDITION의 전담 장인이 오직 한 사람만을 위한 숭고한 수작업 공정에 착수할 준비를 마쳤습니다."
   },
   crafting: {
     step: "STEP 02 : CRAFTING",
-    title: "Master Crafting",
-    desc: "컬렉터님의 아우라 데이터가 장인의 아틀리에로 전달되어, 물리적 구조를 입는 숭고한 수작업 공정이 시작되었습니다."
+    title: "장인 제작 중(Master Crafting)",
+    desc: "컬렉터님이 주문하신 데이터가 장인에게 전달되어, 맞춤형 수작업 공정이 시작되었습니다."
   },
   qc_inspect: {
     step: "STEP 03 : INSPECTION",
     title: "Quality Control",
-    desc: "장인의 손길을 거친 마스터피스가 PAWTRAIT EDITION의 엄격한 검수 센터에 도착하여, 완벽한 무결성을 확인하고 있습니다."
+    desc: "장인의 손길을 거친 마스터피스가 PAWTRAIT EDITION의 엄격한 검수 센터에 도착하여, 품질 검수 중에 있습니다."
   },
   shipping: {
     step: "STEP 04 : DELIVERY",
@@ -37,6 +37,47 @@ const statusMessages: Record<string, { title: string, desc: string, step: string
     desc: "축하합니다. 귀하의 PAWTRAIT EDITION VIP 우선 예약이 최종 확정되었습니다. 정식 런칭 시, 전 세계 그 누구보다 가장 먼저 마스터피스를 소유할 수 있는 절대적인 권한이 부여됩니다."
   },
 };
+
+// 💎 [업그레이드] 작가에게 보내는 럭셔리 작업 지시서(Work Order) HTML 템플릿
+const generateArtistCardHtml = (
+  orderId: string, 
+  itemName: string, 
+  customerName: string,
+  petName: string,
+  petBirth: string,
+  brandColor: string,
+  petImage: string
+) => `
+  <div style="max-width: 600px; margin: 0 auto; background-color: #0a0a0a; color: #ffffff; padding: 40px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; border-radius: 16px; border: 1px solid #27272a;">
+    <p style="color: #a1a1aa; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 8px;">New Work Order</p>
+    <h1 style="font-size: 22px; margin-top: 0; margin-bottom: 24px; font-weight: 600;">새로운 마스터피스 의뢰가 도착했습니다.</h1>
+    
+    ${petImage ? `<img src="${petImage}" alt="Reference Image" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 12px; margin-bottom: 24px; border: 1px solid #27272a;" />` : ''}
+    
+    <div style="background-color: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 24px; margin-bottom: 32px;">
+      
+      <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 6px 0;">Bespoke Data</p>
+      <div style="margin-bottom: 20px; font-size: 14px;">
+        <p style="margin: 4px 0;"><strong>Name:</strong> ${petName || '미상'}</p>
+        <p style="margin: 4px 0;"><strong>Birth:</strong> ${petBirth || '미상'}</p>
+        <div style="display: flex; align-items: center; margin: 4px 0;">
+          <strong>Aura Color:</strong> <span style="margin-left: 8px;">${brandColor || '미지정'}</span>
+          ${brandColor ? `<span style="display: inline-block; width: 14px; height: 14px; background-color: ${brandColor}; border-radius: 50%; border: 1px solid #3f3f46; margin-left: 6px; vertical-align: middle;"></span>` : ''}
+        </div>
+      </div>
+      
+      <div style="height: 1px; background-color: #27272a; margin: 20px 0;"></div>
+
+      <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 6px 0;">Edition Title</p>
+      <p style="font-size: 16px; font-weight: bold; margin: 0 0 20px 0;">${itemName}</p>
+      
+      <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 6px 0;">Order ID & Client</p>
+      <p style="font-family: monospace; font-size: 14px; margin: 0; color: #3b82f6;">${orderId} <span style="color: #71717a; margin: 0 8px;">|</span> <span style="color: #ffffff;">${customerName} 님</span></p>
+    </div>
+
+    <a href="https://pawtraitedition.com/admin/orders" style="display: inline-block; background-color: #ffffff; color: #000000; padding: 14px 24px; text-decoration: none; font-weight: bold; font-size: 12px; border-radius: 8px; letter-spacing: 1px; text-transform: uppercase;">작업 대시보드 열기 &rarr;</a>
+  </div>
+`;
 
 // 💎 블랙 플래티넘 HTML 이메일 제너레이터
 const generateLuxuryEmailHtml = (customerName: string, itemName: string, messageData: any) => {
@@ -95,37 +136,43 @@ const generateLuxuryEmailHtml = (customerName: string, itemName: string, message
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { orderId, status, customerName, customerEmail, itemName } = body;
+    // 🍏 프론트엔드에서 넘어오는 작가 정보(artistEmail)를 추가로 받습니다.
+    const { orderId, status, customerName, customerEmail, itemName, artistEmail, petName, petBirth, brandColor, petImage } = body;    // 💎 [조명탄 투척] 백엔드에 도착한 데이터의 실체를 낱낱이 밝혀냅니다.
+    console.log("🚨 [WEBHOOK X-RAY] 수신된 데이터 상태:");
+    console.log(`- 현재 상태(status): ${status}`);
+    console.log(`- 작가 이메일(artistEmail): ${artistEmail || "❌ 데이터 없음 (프론트에서 안 보냄!)"}`);
 
     if (!statusMessages[status]) {
       return NextResponse.json({ success: true, message: "알림 대상 상태가 아님" });
     }
 
-    // 🍏 [핵심] 이메일 생성기에 주문 ID(orderId)를 넘겨주기 위해 객체를 결합합니다.
     const messageData = { ...statusMessages[status], orderId };
-    
-    // 💎 [라이브 전환] 하드코딩된 이메일을 지우고 고객의 실제 이메일을 타겟으로 지정합니다.
     const targetEmail = customerEmail; 
 
-    // 이메일 주소가 없는 고객을 위한 안전 장치
     if (!targetEmail) {
-      console.error("수신자 이메일 정보가 누락되었습니다.");
       return NextResponse.json({ success: false, error: "No target email provided" }, { status: 400 });
     }
 
-    const { data, error } = await resend.emails.send({
+    // 1. 고객에게 보내는 메일 (기존 로직)
+    await resend.emails.send({
       from: 'PAWTRAIT EDITION Concierge <concierge@pawtraitedition.com>',
       to: targetEmail,
       subject: `[PAWTRAIT EDITION] ${messageData.title}: 여정의 업데이트`,
       html: generateLuxuryEmailHtml(customerName, itemName, messageData),
     });
+    console.log(`[Email Sent] VIP Customer: ${targetEmail}`);
 
-    if (error) {
-      console.error("Resend 발송 에러:", error);
-      return NextResponse.json({ success: false, error }, { status: 400 });
+    // 💎 작가에게 보내는 작업 지시서 메일 발송 로직 (새로운 파라미터 추가)
+    if (status === 'crafting' && artistEmail) {
+      await resend.emails.send({
+        from: 'PAWTRAIT EDITION Work Desk <concierge@pawtraitedition.com>',
+        to: artistEmail,
+        subject: `[작업 지시서] ${itemName} 의뢰가 도착했습니다.`,
+        html: generateArtistCardHtml(orderId, itemName, customerName, petName, petBirth, brandColor, petImage),
+      });
+      console.log(`[Email Sent] Artist Work Order: ${artistEmail}`);
     }
 
-    console.log(`[PAWTRAIT EDITION Email Sent] ID: ${data?.id} | To: ${targetEmail}`);
     return NextResponse.json({ success: true, message: "Notification sent successfully." });
 
   } catch (error) {

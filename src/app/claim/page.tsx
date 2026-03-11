@@ -20,6 +20,23 @@ function ClaimContent() {
   const [petName, setPetName] = useState("");
   const [petBirthDate, setPetBirthDate] = useState("");
 
+  // 💎 [방어막 1] 생년월일 자동 포맷팅 (YYYY.MM.DD)
+  const handleBirthDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 숫자만 남기고 다 지웁니다.
+    let val = e.target.value.replace(/[^0-9]/g, '');
+    
+    // 길이에 맞춰 자동으로 마침표(.)를 찍어줍니다.
+    if (val.length > 4 && val.length <= 6) {
+      val = val.slice(0, 4) + '.' + val.slice(4);
+    } else if (val.length > 6) {
+      val = val.slice(0, 4) + '.' + val.slice(4, 6) + '.' + val.slice(6, 8);
+    }
+    setPetBirthDate(val);
+  };
+
+  // 💎 [방어막 2] 필수 입력 검증 (이름과 생일 10자리가 꽉 차야만 true)
+  const isFormValid = petName.trim().length > 0 && petBirthDate.length === 10;
+
   // UI 상태
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -81,7 +98,7 @@ function ClaimContent() {
 
   // 3. 마스터피스 금고 영구 저장 로직
   const handleSaveToVault = async () => {
-    if (images.length === 0 || selectedIndexes.length === 0) return;
+    if (images.length === 0 || selectedIndexes.length === 0 || !isFormValid) return;
     setIsSaving(true);
     
     const selectedImages = selectedIndexes.map(i => images[i]);
@@ -160,10 +177,50 @@ function ClaimContent() {
       {!isLoginModalOpen && images.length > 0 && (
         <div className="p-6 pb-40 animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <header className="mb-10 text-center pt-8">
-            <h2 className="text-[9px] text-zinc-500 font-bold tracking-[0.4em] uppercase mb-2">Sync Complete</h2>
-            <h1 className="text-3xl font-serif font-bold tracking-tight">Select Masterpieces</h1>
-            <p className="text-xs text-zinc-400 font-light mt-3">금고에 보관할 사진들을 선택하십시오</p>
+            <h2 className="text-[9px] text-zinc-500 font-bold tracking-[0.4em] uppercase mb-2">아카이브 준비 완료</h2>
+            <h1 className="text-3xl font-serif font-bold tracking-tight">ORIGINAL</h1>
+            <p className="text-xs text-zinc-400 font-light mt-3">내 갤러리에 소장할 아름다운 순간을 선택해 주십시오.</p>
           </header>
+
+          {/* 강아지 프로필 입력 폼 */}
+          <div className="mb-10 space-y-5 bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/50 backdrop-blur-md relative overflow-hidden">
+            {/* 럭셔리한 필수 입력 강조 이펙트 */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-zinc-500 to-transparent opacity-50"></div>
+            
+            <h3 className="flex items-center justify-between text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-4">
+              <span className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> 프로필
+              </span>
+              <span className="text-red-500/70 text-[8px] tracking-widest bg-red-500/10 px-2 py-0.5 rounded-sm">REQUIRED</span>
+            </h3>
+            
+            <div className="space-y-1.5">
+              <label className="block text-[9px] font-bold text-zinc-500 tracking-widest ml-1">이름 NAME</label>
+              <input 
+                type="text" 
+                value={petName} 
+                onChange={(e) => setPetName(e.target.value)}
+                placeholder="반려동물의 이름 (ex. MAX)"
+                maxLength={20}
+                className="w-full bg-black/50 border border-zinc-800 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:border-white transition-colors placeholder:text-zinc-600"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-[9px] font-bold text-zinc-500 tracking-widest ml-1">생일 BORN DATE</label>
+              <input 
+                type="text" 
+                value={petBirthDate} 
+                onChange={handleBirthDateChange} // 🍏 스마트 마스킹 함수 연결
+                placeholder="YYYYMMDD (숫자만 입력 )"
+                maxLength={10} // 10자리까지만 입력 가능
+                className={`w-full bg-black/50 border rounded-2xl px-5 py-4 text-sm text-white focus:outline-none transition-colors placeholder:text-zinc-600 font-mono ${petBirthDate.length > 0 && petBirthDate.length < 10 ? 'border-red-500/50 focus:border-red-500' : 'border-zinc-800 focus:border-white'}`}
+              />
+              {petBirthDate.length > 0 && petBirthDate.length < 10 && (
+                <p className="text-red-500/70 text-[8px] pl-2 mt-1 tracking-wider">정확한 연월일 8자리를 입력해주십시오.</p>
+              )}
+            </div>
+          </div>
 
           {/* 사진 선택 그리드 */}
           <div className="grid grid-cols-2 gap-4 mb-10">
@@ -195,34 +252,7 @@ function ClaimContent() {
             })}
           </div>
 
-          {/* 강아지 프로필 입력 폼 */}
-          <div className="mb-10 space-y-5 bg-zinc-900/40 p-6 rounded-3xl border border-zinc-800/50 backdrop-blur-md">
-            <h3 className="flex items-center gap-2 text-[10px] font-bold text-zinc-500 uppercase tracking-[0.2em] mb-4">
-              <span className="w-1.5 h-1.5 rounded-full bg-zinc-500" /> Companion Profile
-            </h3>
-            
-            <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold text-zinc-500 tracking-widest ml-1">NAME</label>
-              <input 
-                type="text" 
-                value={petName} 
-                onChange={(e) => setPetName(e.target.value)}
-                placeholder="반려동물의 이름 (ex. MAX)"
-                className="w-full bg-black/50 border border-zinc-800 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:border-white transition-colors placeholder:text-zinc-600"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold text-zinc-500 tracking-widest ml-1">BORN DATE</label>
-              <input 
-                type="text" 
-                value={petBirthDate} 
-                onChange={(e) => setPetBirthDate(e.target.value)}
-                placeholder="YYYY.MM.DD"
-                className="w-full bg-black/50 border border-zinc-800 rounded-2xl px-5 py-4 text-sm text-white focus:outline-none focus:border-white transition-colors placeholder:text-zinc-600 font-mono"
-              />
-            </div>
-          </div>
+          
 
           {/* 브랜드 컬러 팔레트 */}
           {colorChips.length > 0 && (
@@ -242,14 +272,19 @@ function ClaimContent() {
             </div>
           )}
 
-          {/* 하단 고정 저장 버튼 */}
+          {/* 💎 하단 고정 저장 버튼 (조건 미충족 시 비활성화) */}
           <div className="fixed bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black via-black/90 to-transparent z-40 pointer-events-none">
             <button 
               onClick={handleSaveToVault} 
-              disabled={isSaving}
-              className="w-full h-16 bg-white text-black font-bold text-[11px] tracking-[0.2em] uppercase rounded-full shadow-[0_0_40px_rgba(255,255,255,0.15)] active:scale-[0.98] transition-all pointer-events-auto disabled:opacity-50 disabled:cursor-wait"
+              disabled={isSaving || !isFormValid} // 🍏 폼이 완성되지 않으면 버튼 클릭 불가
+              className={`w-full h-16 font-bold text-[11px] tracking-[0.2em] uppercase rounded-full shadow-[0_0_40px_rgba(255,255,255,0.15)] transition-all pointer-events-auto 
+                ${isFormValid && !isSaving 
+                  ? 'bg-white text-black active:scale-[0.98]' 
+                  : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                }
+              `}
             >
-              {isSaving ? "Securing Data..." : `Add ${selectedIndexes.length} Assets to Vault`}
+              {isSaving ? "Securing Data..." : !isFormValid ? "Complete Profile to Save" : `Add ${selectedIndexes.length} Assets to Vault`}
             </button>
           </div>
         </div>

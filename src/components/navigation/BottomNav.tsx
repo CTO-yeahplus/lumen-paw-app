@@ -17,7 +17,7 @@ export default function BottomNav({ activeTab, setActiveTab, onScanClick }: Bott
         className={`flex-1 flex flex-col items-center gap-1.5 transition-colors ${activeTab === "vault" ? "text-white" : "text-zinc-600 hover:text-zinc-400"}`}
       >
         <LayoutGrid strokeWidth={2.5} size={20} />
-        <span className="text-[8px] font-bold tracking-widest">VAULT</span>
+        <span className="text-[8px] font-bold tracking-widest">내 갤러리</span>
       </button>
 
       {/* 2. STORY */}
@@ -26,7 +26,7 @@ export default function BottomNav({ activeTab, setActiveTab, onScanClick }: Bott
         className={`flex-1 flex flex-col items-center gap-1.5 transition-colors ${activeTab === "editorial" ? "text-white" : "text-zinc-600 hover:text-zinc-400"}`}
       >
         <BookOpen strokeWidth={2.5} size={20} />
-        <span className="text-[8px] font-bold tracking-widest">STORY</span>
+        <span className="text-[8px] font-bold tracking-widest">브랜드 스토리</span>
       </button>
 
       {/* 3. SCANNER (조화로운 밸런스 유지) */}
@@ -46,7 +46,7 @@ export default function BottomNav({ activeTab, setActiveTab, onScanClick }: Bott
         className={`flex-1 flex flex-col items-center gap-1.5 transition-colors ${activeTab === "muse" ? "text-white" : "text-zinc-600 hover:text-zinc-400"}`}
       >
         <Sparkles strokeWidth={2.5} size={20} />
-        <span className="text-[8px] font-bold tracking-widest">MUSE</span>
+        <span className="text-[8px] font-bold tracking-widest">뮤즈 라운지</span>
       </button>
 
     </nav>

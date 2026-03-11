@@ -272,10 +272,10 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
                     />
                     
                     {[
-                    { step: "01", label: "Consult", desc: "아우라 분석" },
-                    { step: "02", label: "Craft", desc: "장인 수작업" },
+                    { step: "01", label: "Consult", desc: "컬러 큐레이팅" },
+                    { step: "02", label: "Craft", desc: "장인 제작" },
                     { step: "03", label: "Inspect", desc: "품질 검수" },
-                    { step: "04", label: "Deliver", desc: "품격 있는 전달" }
+                    { step: "04", label: "Deliver", desc: "문앞까지 배송" }
                     ].map((proc, idx) => (
                     <div 
                       key={idx} 

@@ -147,10 +147,10 @@ function VaultContent() {
       <header className="px-6 pt-16 pb-6 flex justify-between items-end bg-black/80 backdrop-blur-xl sticky top-0 z-40 border-b border-zinc-900">
         <div>
           <h2 className="text-zinc-500 text-[9px] font-bold tracking-[0.4em] uppercase mb-1">
-            {activeTab === "vault" ? "Private Vault" : activeTab === "editorial" ? " Magazine" : "The Future Vision"}
+            {activeTab === "vault" ? "내 갤러리" : activeTab === "editorial" ? " Magazine" : "The Future Vision"}
           </h2>
           <h1 className="text-3xl font-extrabold tracking-tight">
-            {activeTab === "vault" ? "Masterpieces" : activeTab === "editorial" ? "Story" : "Muse"}
+            {activeTab === "vault" ? "Origianl" : activeTab === "editorial" ? "Story" : "Muse"}
           </h1>
         </div>
         <button onClick={() => setIsProfileModalOpen(true)} className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-sm font-bold shadow-lg">{userInitial}</button>

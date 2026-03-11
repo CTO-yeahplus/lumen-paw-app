@@ -37,22 +37,34 @@ export default function LumenCustomSection({ dominantColor, imageUrl, onCheckout
 
   const copywritingList = [
     {
-      quote: '"사진은 기억을 남기지만, 오브제는 시간을 만질 수 있게 합니다."',
-      text1: '반려견의 시간은 우리보다 빠르게 흐르기에, 눈부신 찰나를 기록한 지금 이 순간은 그 자체로 완벽한 마스터피스입니다.',
-      text2: '클라우드에 갇힌 아이의 온기를 장인의 손길을 거친 실물 오브제로 꺼내어 주십시오. 아이를 상징하는 고유한 컬러',
-      text3: '로 빚어내어, 언제든 손끝으로 쓰다듬을 수 있는 영원한 곁이 됩니다.'
+      quote: '"디지털의 정교함에 장인의 무게를 더하다."',
+      text1: '클라우드에 저장된 네 컷의 고해상도 이미지가 PAWTRAIT EDITION 장인의 손길을 거쳐 프리미엄 실물 오브제로 재탄생합니다. 변치 않는 최고급 소재 위에 아이와의 특별한 순간을 각인하십시오.',
+      text2: '시스템이 정밀하게 분석한 아이의 시그니처 컬러 ',
+      text3: '가 제품의 마감재로 적용되어, 시각적 아름다움과 촉각적 품격을 동시에 만족시키는 마스터피스가 완성됩니다.'
     },
     {
-      quote: '"예술은 눈으로 보지만, 진정한 마스터피스는 손끝에서 완성됩니다."',
-      text1: '다시 오지 않을 우리 아이의 가장 아름다운 순간. 디지털 데이터로만 남겨두기엔 너무나 소중한 이 기록을 장인의 묵직한 수작업을 통해 현실로 가져오십시오.',
-      text2: '가장 아름다운 찰나의 순간에, 아이의 영혼이 담긴 컬러',
-      text3: '가 당신의 일상 공간에 깊이 스며듭니다.'
+      quote: '"단 하나의 데이터를 바탕으로 완성되는 완벽한 비스포크 오브제."',
+      text1: '네 컷의 사진으로 완성된 고품질의 데이터를 기반으로, PAWTRAIT EDITION 전담 장인의 맞춤 제작 공정이 시작됩니다. 가장 소중한 순간을 가장 견고하고 아름다운 형태로 간직하십시오.',
+      text2: '사진에서 추출된 아이의 아우라 컬러 ',
+      text3: '가 제품의 디테일로 세공되어, 세상에 단 하나뿐인 프라이빗 에디션이 탄생합니다.'
     },
     {
-      quote: '"가장 소중한 것은 눈에 보이지 않지만, 곁에 둘 수 있습니다."',
-      text1: '아이와의 벅찬 교감을 담아낸 이 사진은 그 자체로 이미 걸작입니다. 이제 이 찰나의 기적에 장인의 온기를 더해, 당신이 직접 만질 수 있는 물리적 오브제로 소유하십시오.',
-      text2: '아이만의 시그니처 컬러',
-      text3: '로 세공된 이 작품은 당신과 아이의 유대를 영원히 증명합니다.'
+      quote: '"변하지 않는 가치를 담아, 가장 직관적인 형태로 소유하십시오."',
+      text1: '데이터는 휘발될 수 있지만, 정교하게 만들어진 실물 오브제는 오랜 시간 곁에 남습니다. 아이의 모습이 담긴 사진을 최고급 소재에 결합하여, 언제든 눈으로 보고 손으로 질감을 느낄 수 있는 실물로 제작합니다.',
+      text2: '주문과 동시에 아이의 고유 컬러 ',
+      text3: '를 반영한 맞춤 공정이 시작되며, 일상에 품격을 더하는 특별한 마스터피스로 배송됩니다.'
+    },
+    {
+      quote: '"오직 하나의 데이터로 완성되는 프라이빗 컬렉션."',
+      text1: '원본 사진의 디테일을 한 치의 손상 없이 보존하며, 이를 물리적인 한정판 에디션으로 확장합니다. 당신의 갤러리 속 소장품이 완벽한 형태를 갖춘 실물 작품으로 완성되는 과정을 경험하십시오.',
+      text2: '아이의 사진에서 도출된 고유한 브랜드 컬러 ',
+      text3: '가 제품 전반에 고급스럽게 스며들어, 다른 누구도 소유할 수 없는 당신만의 독보적인 아카이브가 탄생합니다.'
+    },
+    {
+      quote: '"당신의 가장 사적인 기록이 일상의 럭셔리가 됩니다."',
+      text1: '단순히 사진을 촬영하는 것을 넘어, 아이와의 교감이 담긴 데이터를 당신의 라이프스타일에 걸맞은 하이엔드 에디션으로 직조해 냅니다. 주문이 확인되는 즉시 오직 한 분을 위한 1:1 맞춤 세공이 시작됩니다.',
+      text2: '수많은 색채 중 오직 아이만을 위해 추출된 아우라 컬러 ',
+      text3: '를 디자인의 핵심 요소로 배치하여, 일상 속에서도 그 특별한 존재감을 매일 경험할 수 있습니다.'
     }
   ];
 
@@ -67,9 +79,9 @@ export default function LumenCustomSection({ dominantColor, imageUrl, onCheckout
       <div className="relative z-10">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-1.5 h-1.5 rounded-full animate-pulse shadow-[0_0_10px_currentColor]" style={{ backgroundColor: dominantColor, color: dominantColor }} />
-          <h3 className="text-zinc-400 text-[9px] font-bold tracking-[0.3em] uppercase">Physical Extension</h3>
+          <h3 className="text-zinc-400 text-[9px] font-bold tracking-[0.3em] uppercase">실물 에디션 제작</h3>
         </div>
-        <h2 className="text-2xl font-serif font-bold text-white mb-4">PAWTRAIT EDITION Custom</h2>
+        <h2 className="text-2xl font-serif font-bold text-white mb-4">퍼스널 맞춤 제작</h2>
         
         <p className="text-xs text-zinc-400 font-light leading-[1.8] mb-8 word-break-keep transition-opacity duration-1000">
           <strong className="text-white font-serif italic text-sm block mb-3">{currentCopy.quote}</strong>

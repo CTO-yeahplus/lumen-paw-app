@@ -22,7 +22,9 @@ export default function EditionDropDesk() {
     total_editions: 100,
     category: "case",
     craftsmanship: "이탈리아산 프리미엄 베지터블 레더",
-    lead_time: "주문 확인 후 장인의 수작업으로 3주 소요"
+    lead_time: "주문 확인 후 장인의 수작업으로 3주 소요",
+    artist_name: "",  // 🍏 추가됨
+    artist_email: ""  // 🍏 추가됨
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -64,7 +66,9 @@ export default function EditionDropDesk() {
       total_editions: product.total_editions,
       category: product.category || "case",
       craftsmanship: product.craftsmanship || "",
-      lead_time: product.lead_time || ""
+      lead_time: product.lead_time || "",
+      artist_name: product.artist_name || "",
+      artist_email: product.artist_email || ""
     });
     // 스크롤을 맨 위로 올려 폼을 보여줌
     window.scrollTo({ top: 0, behavior: "smooth" }); 
@@ -152,6 +156,16 @@ export default function EditionDropDesk() {
             </header>
 
             <form onSubmit={handleDropEdition} className="bg-zinc-950 border border-zinc-800 rounded-3xl p-8 flex flex-col gap-6 shadow-2xl">
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Artist Name (작가명)</label>
+                  <input type="text" value={formData.artist_name} onChange={e => setFormData({...formData, artist_name: e.target.value})} placeholder="e.g., LUNA" className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Artist Email (작가 이메일)</label>
+                  <input type="email" value={formData.artist_email} onChange={e => setFormData({...formData, artist_email: e.target.value})} placeholder="artist@example.com" className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors" />
+                </div>
+              </div>
               
               <div>
                 <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Edition ID (영문/숫자 고유값)</label>

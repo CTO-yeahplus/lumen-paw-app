@@ -13,6 +13,8 @@ export default function AdminOrdersPage() {
 
   const fetchOrders = async () => {
     setIsRefreshing(true);
+    
+    // 🍏 [원상 복구] 무리한 JOIN을 제거하고, 원래의 빠르고 안정적인 쿼리로 되돌립니다.
     const { data, error } = await supabase
       .from("pre_orders")
       .select(`
@@ -21,7 +23,10 @@ export default function AdminOrdersPage() {
       `)
       .order("created_at", { ascending: false });
 
+    // 에러가 났을 경우 콘솔에 띄워줍니다 (화면 백지화 방지)
+    if (error) console.error("🚨 주문 목록 로딩 에러:", error.message);
     if (!error && data) setOrders(data);
+    
     setLoading(false);
     setTimeout(() => setIsRefreshing(false), 500); 
   };
@@ -39,6 +44,22 @@ export default function AdminOrdersPage() {
         const joinedUser = Array.isArray(order.users) ? order.users[0] : order.users;
         const targetName = order.contact_name || joinedUser?.full_name || 'VIP Member';
         const targetEmail = order.contact_email || joinedUser?.email;
+        
+        // 💎 [정밀 타격 로직] 상태를 변경할 때, 해당 상품의 작가 이메일만 단독으로 조용히 꺼내옵니다.
+        let artistEmail = "";
+        try {
+          const { data: productData } = await supabase
+            .from("products")
+            .select("artist_email")
+            .eq("name", order.item_name) // 상품명으로 작가 이메일을 검색합니다
+            .maybeSingle(); 
+            
+          if (productData?.artist_email) {
+            artistEmail = productData.artist_email;
+          }
+        } catch (err) {
+          console.error("⚠️ 작가 이메일 추출 실패 (무시하고 진행):", err);
+        }
 
         try {
           await fetch('/api/webhook/status', {
@@ -49,10 +70,18 @@ export default function AdminOrdersPage() {
               status: newStatus,
               customerName: targetName,
               customerEmail: targetEmail,
-              itemName: order.item_name
+              itemName: order.item_name,
+              artistEmail: artistEmail,
+              
+              // 💎 [핵심 추가 배관] 작가를 위한 영감(Inspiration) 데이터 탑재
+              // DB의 컬럼명에 맞게 매핑해 줍니다.
+              petName: order.pet_name || "",
+              petBirth: order.pet_birth || "",
+              brandColor: order.dominant_color || "", 
+              petImage: order.image_url || ""
             }),
           });
-          console.log(`🍏 Webhook triggered for ${newStatus}`);
+          console.log(`🍏 Webhook triggered for ${newStatus} (Artist: ${artistEmail || "None"})`);
         } catch (err) {
           console.error('Failed to trigger webhook', err);
         }

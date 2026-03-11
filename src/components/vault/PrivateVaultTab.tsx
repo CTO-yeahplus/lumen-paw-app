@@ -44,6 +44,29 @@ export default function PrivateVaultTab({
   // 🍏 Z축 아카이브 서랍을 열고 닫는 상태
   const [isArchiveSheetOpen, setIsArchiveSheetOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false); // 🍏 추가: 팔레트 팝업 상태
+  // 🍏 [추가] 스와이프 감지를 위한 터치 시작 Y좌표
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY === null) return;
+    
+    const touchCurrentY = e.touches[0].clientY;
+    const deltaY = touchCurrentY - touchStartY;
+
+    // 💎 손가락을 80px 이상 아래로 끌어내렸다면 우아하게 서랍을 닫습니다.
+    if (deltaY > 80) {
+      setIsArchiveSheetOpen(false);
+      setTouchStartY(null); // 중복 실행 방지
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setTouchStartY(null);
+  };
 
   const formatDate = (dateString: string) => {
     const d = new Date(dateString);
@@ -200,11 +223,22 @@ export default function PrivateVaultTab({
         
         {/* 아카이브 리스트 시트 */}
         <div className={`absolute bottom-0 left-0 w-full bg-[#0a0a0a] border-t border-zinc-800 rounded-t-[32px] p-8 pb-16 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isArchiveSheetOpen ? "translate-y-0" : "translate-y-full"} shadow-[0_-20px_50px_rgba(0,0,0,0.8)]`}>
-          <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mb-8" />
-          
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-xl font-serif font-bold text-white">The Archive</h3>
-            <button onClick={() => setIsArchiveSheetOpen(false)} className="text-[10px] text-zinc-500 font-bold tracking-widest uppercase border border-zinc-800 px-3 py-1.5 rounded-full">Close</button>
+          {/* 💎 [스와이프 센서 구역] 스크롤 리스트와 충돌하지 않도록 헤더 부분에만 센서를 부착합니다. */}
+          <div 
+            className="pb-8 -mt-4 pt-4 cursor-grab active:cursor-grabbing touch-none"
+          >
+
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-serif font-bold text-white">The Archive</h3>
+              <button 
+                onClick={() => setIsArchiveSheetOpen(false)} 
+                // 닫기 버튼을 누를 때 스와이프 이벤트와 겹치지 않도록 z-index와 stopPropagation 추가
+                onTouchStart={(e) => e.stopPropagation()} 
+                className="text-[10px] text-zinc-500 font-bold tracking-widest uppercase border border-zinc-800 px-3 py-1.5 rounded-full relative z-10"
+              >
+                Close
+              </button>
+            </div>
           </div>
           
           <ul className="flex flex-col max-h-[50vh] overflow-y-auto scrollbar-hide pr-2">
