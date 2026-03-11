@@ -103,9 +103,10 @@ export default function AdminOrdersPage() {
                 <th className="py-4 px-6 font-bold">사진 (Photo)</th>
                 <th className="py-4 px-6 font-bold">컬렉터 (고객)</th>
                 <th className="py-4 px-6 font-bold">주문 제품 (Item)</th>
+                <th className="py-4 px-6 font-bold text-right">진행 상태 (Status Control)</th>
+
                 <th className="py-4 px-6 font-bold">아우라 컬러</th>
                 <th className="py-4 px-6 font-bold">배송 정보 (Shipping)</th>
-                <th className="py-4 px-6 font-bold text-right">진행 상태 (Status Control)</th>
               </tr>
             </thead>
             <tbody className="text-sm">
@@ -162,6 +163,27 @@ export default function AdminOrdersPage() {
                         <div className="text-zinc-300 font-bold uppercase tracking-wide text-xs">{order.item_name}</div>
                         <div className="text-zinc-600 font-mono text-[9px] mt-1">{order.item_id}</div>
                       </td>
+                      <td className="py-6 px-6 text-right">
+                        <select 
+                          value={order.status || 'pending'}
+                          onChange={(e) => updateOrderStatus(order, e.target.value)}
+                          className={`bg-black border rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider outline-none cursor-pointer transition-colors ${
+                            order.status === 'pending' ? 'border-red-500/50 text-red-500' : 
+                            order.status === 'pending_payment' ? 'border-amber-500/50 text-amber-500' : 
+                            order.status === 'crafting' ? 'border-blue-500/50 text-blue-500' : 
+                            order.status === 'qc_inspect' ? 'border-purple-500/50 text-purple-500' :
+                            order.status === 'shipping' ? 'border-green-500/50 text-green-500' :
+                            'border-zinc-700 text-zinc-400'
+                          }`}
+                        >
+                          <option value="pending">0. Pending (결제 대기)</option>
+                          <option value="pending_payment">1. 결제/데이터 확인</option>
+                          <option value="crafting">2. 장인 수작업 중</option>
+                          <option value="qc_inspect">3. PAWTRAIT EDITION 품질 검수</option>
+                          <option value="shipping">4. 배송 및 패키징</option>
+                        </select>
+                      </td>
+
                       <td className="py-6 px-6">
                         <div className="flex items-center gap-3">
                           <div className="w-4 h-4 rounded-full border border-zinc-700 shadow-sm" style={{ backgroundColor: order.dominant_color }} />
@@ -190,26 +212,7 @@ export default function AdminOrdersPage() {
                         )}
                       </td>
 
-                      <td className="py-6 px-6 text-right">
-                        <select 
-                          value={order.status || 'pending'}
-                          onChange={(e) => updateOrderStatus(order, e.target.value)}
-                          className={`bg-black border rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-wider outline-none cursor-pointer transition-colors ${
-                            order.status === 'pending' ? 'border-red-500/50 text-red-500' : 
-                            order.status === 'pending_payment' ? 'border-amber-500/50 text-amber-500' : 
-                            order.status === 'crafting' ? 'border-blue-500/50 text-blue-500' : 
-                            order.status === 'qc_inspect' ? 'border-purple-500/50 text-purple-500' :
-                            order.status === 'shipping' ? 'border-green-500/50 text-green-500' :
-                            'border-zinc-700 text-zinc-400'
-                          }`}
-                        >
-                          <option value="pending">0. Pending (결제 대기)</option>
-                          <option value="pending_payment">1. 결제/데이터 확인</option>
-                          <option value="crafting">2. 장인 수작업 중</option>
-                          <option value="qc_inspect">3. PAWTRAIT EDITION 품질 검수</option>
-                          <option value="shipping">4. 배송 및 패키징</option>
-                        </select>
-                      </td>
+                      
                     </tr>
                   );
                 })
