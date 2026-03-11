@@ -134,7 +134,7 @@ export default function ConciergeDesk() {
                 <tr className="border-b border-zinc-800 text-[10px] uppercase tracking-widest text-zinc-500 bg-black/50">
                   <th className="p-4 pl-6 font-medium">Time</th>
                   <th className="p-4 font-medium">VIP Member</th>
-                  <th className="p-4 font-medium">Edition / Aura</th>
+                  <th className="p-4 font-medium">Edition / Color</th>
                   <th className="p-4 font-medium">Status</th>
                   <th className="p-4 pr-6 font-medium text-right">Concierge Action</th>
                 </tr>

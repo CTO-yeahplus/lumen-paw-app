@@ -272,7 +272,7 @@ function AIEditorContent() {
               {/* 컬러 팔레트 표시 영역 */}
               {colorPalette.length > 0 && (
                 <div className="mt-8">
-                  <p className="text-[9px] font-bold text-zinc-500 tracking-widest mb-3 uppercase">Extracted Aura Palette</p>
+                  <p className="text-[9px] font-bold text-zinc-500 tracking-widest mb-3 uppercase">Extracted Color Palette</p>
                   <div className="flex gap-3 flex-wrap bg-black p-4 rounded-xl border border-zinc-800 w-fit">
                     {colorPalette.map((color, idx) => (
                       <div key={idx} className="flex flex-col items-center gap-2 group">
@@ -360,7 +360,7 @@ function AIEditorContent() {
                       {colorPalette.length > 0 && (
                         <div className="mt-12 pt-8 border-t border-zinc-900 flex flex-col items-center">
                           <span className="text-[8px] font-bold tracking-[0.4em] uppercase text-zinc-500 mb-6">
-                            The Identity Aura
+                            The Identity Color
                           </span>
                           <div className="flex flex-wrap gap-4 justify-center w-full px-2">
                             {colorPalette.slice(0, 8).map((colorHex, i) => (

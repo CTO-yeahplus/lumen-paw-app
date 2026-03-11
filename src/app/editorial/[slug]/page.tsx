@@ -118,7 +118,7 @@ export default function EditorialPage() {
                   
                   <div className="my-16 py-12 border-y border-zinc-900 flex flex-col items-center bg-zinc-950/30 rounded-3xl backdrop-blur-sm">
                     <span className="text-[9px] font-bold tracking-[0.4em] uppercase text-zinc-500 mb-8">
-                      Select Your Identity Aura
+                      Select Your Identity Color
                     </span>
                     
                     <div className="flex flex-wrap gap-5 md:gap-8 justify-center w-full px-4">

@@ -149,7 +149,7 @@ export default function AdminDashboard() {
       {/* 하단 장식용 카피 */}
       <div className="mt-20 text-center">
         <p className="text-[9px] text-zinc-700 tracking-[0.4em] uppercase font-serif">
-          Data translates into Aura. Aura translates into Eternity.
+          Data translates into Color. Color translates into Eternity.
         </p>
       </div>
     </div>

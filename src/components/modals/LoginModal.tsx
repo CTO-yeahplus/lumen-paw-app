@@ -86,13 +86,13 @@ export default function LoginModal({ isOpen, onClose, isFromQR = false }: LoginM
           
           <h2 className="text-3xl font-bold text-white mb-2 tracking-tight">
             {isFromQR ? (
-              <>마스터피스가<br/>준비되었습니다.</>
+              <>오리지널 사진이<br/>준비되었습니다.</>
             ) : (
-              <>프라이빗 금고에<br/>오신 것을 환영합니다.</>
+              <>PAWTRAIT EDITION에<br/>오신 것을 환영합니다.</>
             )}
           </h2>
           <p className="text-zinc-400 text-sm">
-            {isFromQR ? "로그인하여 디지털 금고를 열어주십시오." : "PAWTRAIT EDITION 멤버십 인증을 진행해 주십시오."}
+            {isFromQR ? "로그인하여 내 갤러리를 열어주십시오." : "PAWTRAIT EDITION 멤버십 인증을 진행해 주십시오."}
           </p>
         </div>
 

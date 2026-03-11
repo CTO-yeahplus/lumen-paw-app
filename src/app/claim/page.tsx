@@ -257,7 +257,7 @@ function ClaimContent() {
           {/* 브랜드 컬러 팔레트 */}
           {colorChips.length > 0 && (
             <div className="pt-8 border-t border-zinc-900/50">
-              <h3 className="text-[10px] text-zinc-500 font-bold tracking-[0.3em] uppercase mb-6 text-center">Aura Palette</h3>
+              <h3 className="text-[10px] text-zinc-500 font-bold tracking-[0.3em] uppercase mb-6 text-center">Color Palette</h3>
               <div className="flex flex-wrap justify-center gap-5">
                 {colorChips.map((color, idx) => (
                   <div key={idx} className="flex flex-col items-center gap-2 group cursor-default">

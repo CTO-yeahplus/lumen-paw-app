@@ -91,7 +91,7 @@ export default function PrivateArchiveModal({ isOpen, onClose, dominantColor }: 
           <div className="absolute top-0 left-0 w-full h-1" style={{ backgroundColor: dominantColor }} />
           <div>
             <h2 className="text-2xl font-serif text-white tracking-widest uppercase">Private Archive</h2>
-            <p className="text-[10px] text-zinc-500 tracking-[0.3em] uppercase mt-2">당신의 빛이 기록된 영원한 금고</p>
+            <p className="text-[10px] text-zinc-500 tracking-[0.3em] uppercase mt-2">우리의 순간이 기록된 내 갤러리</p>
           </div>
           <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors text-xs font-bold tracking-widest uppercase">Close</button>
         </header>
@@ -111,7 +111,7 @@ export default function PrivateArchiveModal({ isOpen, onClose, dominantColor }: 
                   <div key={mp.id} className="relative aspect-[3/4] rounded-2xl overflow-hidden group border border-zinc-800 shadow-xl">
                     <img 
                         src={mp.display_url} /* 🍏 이제 완벽한 주소가 여기에 들어갑니다 */
-                        alt={mp.pet_name || "PAWTRAIT EDITION Aura"} 
+                        alt={mp.pet_name || "PAWTRAIT EDITION"} 
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" 
                         onError={(e) => {
                             // 🍏 만약의 오류에도 엑스박스가 뜨지 않도록 우아하게 감춤
@@ -121,7 +121,7 @@ export default function PrivateArchiveModal({ isOpen, onClose, dominantColor }: 
                     <div className="absolute inset-0 opacity-20 mix-blend-color transition-opacity duration-1000 group-hover:opacity-40" style={{ backgroundColor: mp.dominant_color || dominantColor }} />
                     <div className="absolute bottom-0 w-full p-6 bg-gradient-to-t from-black via-black/80 to-transparent">
                       <span className="text-[10px] font-mono text-zinc-400 mb-1 block" style={{ color: mp.dominant_color || dominantColor }}>
-                        AURA: {mp.dominant_color || 'EXTRACTED'}
+                        멍스널컬러: {mp.dominant_color || 'EXTRACTED'}
                       </span>
                       <h4 className="text-xl font-serif text-white">{mp.pet_name || "Masterpiece"}</h4>
                       <p className="text-xs text-zinc-500 mt-1">{new Date(mp.created_at).toLocaleDateString('ko-KR')}</p>
@@ -130,7 +130,7 @@ export default function PrivateArchiveModal({ isOpen, onClose, dominantColor }: 
                 ))
               ) : (
                 <div className="h-full flex items-center justify-center border border-dashed border-zinc-800 rounded-2xl">
-                  <p className="text-zinc-600 text-xs tracking-widest uppercase">기록된 영혼이 없습니다</p>
+                  <p className="text-zinc-600 text-xs tracking-widest uppercase">기록된 순간이 없습니다</p>
                 </div>
               )}
             </div>
@@ -175,7 +175,7 @@ export default function PrivateArchiveModal({ isOpen, onClose, dominantColor }: 
                       {/* 🍏 장인의 여정 트래킹 (상태 기반 자동 점등) */}
                       <div className="space-y-6 relative z-10">
                         {[
-                          { step: 1, label: "Aura Confirmed", desc: "결제 및 아우라 데이터 확정" },
+                          { step: 1, label: "Paymment Confirmed", desc: "결제 및 아우라 데이터 확정" },
                           { step: 2, label: "Master Crafting", desc: "장인 수작업 진행 중" },
                           { step: 3, label: "Quality Control", desc: "PAWTRAIT EDITION 최종 검수" },
                           { step: 4, label: "Delivery", desc: "품격 있는 전달" }

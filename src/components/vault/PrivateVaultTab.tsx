@@ -91,8 +91,8 @@ export default function PrivateVaultTab({
             <polyline points="21 15 16 10 5 21"></polyline>
           </svg>
         </div>
-        <h3 className="text-zinc-400 text-lg font-serif mb-2">금고가 비어있습니다</h3>
-        <p className="text-zinc-600 text-xs">오프라인 스튜디오에서 스캔하여 마스터피스를 보관하세요.</p>
+        <h3 className="text-zinc-400 text-lg font-serif mb-2">갤러리가 비어있습니다</h3>
+        <p className="text-zinc-600 text-xs">견생네컷에서 촬영후에 마스터피스를 보관하세요.</p>
       </div>
     );
   }
@@ -160,7 +160,7 @@ export default function PrivateVaultTab({
                     style={{ backgroundColor: dominantColor }} 
                 />
                 <span className="text-[7px] font-mono text-white/70 tracking-widest uppercase">
-                    Aura
+                    멍스널컬러
                 </span>
               </div>
           </div>

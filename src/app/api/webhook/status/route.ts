@@ -61,7 +61,7 @@ const generateArtistCardHtml = (
         <p style="margin: 4px 0;"><strong>Name:</strong> ${petName || '미상'}</p>
         <p style="margin: 4px 0;"><strong>Birth:</strong> ${petBirth || '미상'}</p>
         <div style="display: flex; align-items: center; margin: 4px 0;">
-          <strong>Aura Color:</strong> <span style="margin-left: 8px;">${brandColor || '미지정'}</span>
+          <strong>멍스널컬러:</strong> <span style="margin-left: 8px;">${brandColor || '미지정'}</span>
           ${brandColor ? `<span style="display: inline-block; width: 14px; height: 14px; background-color: ${brandColor}; border-radius: 50%; border: 1px solid #3f3f46; margin-left: 6px; vertical-align: middle;"></span>` : ''}
         </div>
       </div>
