@@ -46,8 +46,11 @@ const generateArtistCardHtml = (
   petName: string,
   petBirth: string,
   brandColor: string,
-  petImage: string
-) => `
+  petImage: string,
+  productImage: string, 
+  material: string, 
+  dimensions: string,
+  totalEditions: number) => `
   <div style="max-width: 600px; margin: 0 auto; background-color: #0a0a0a; color: #ffffff; padding: 40px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; border-radius: 16px; border: 1px solid #27272a;">
     <p style="color: #a1a1aa; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 8px;">New Work Order</p>
     <h1 style="font-size: 22px; margin-top: 0; margin-bottom: 24px; font-weight: 600;">새로운 마스터피스 의뢰가 도착했습니다.</h1>
@@ -55,14 +58,20 @@ const generateArtistCardHtml = (
     ${petImage ? `<img src="${petImage}" alt="Reference Image" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 12px; margin-bottom: 24px; border: 1px solid #27272a;" />` : ''}
     
     <div style="background-color: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 24px; margin-bottom: 32px;">
+  
+      <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 6px 0;">Product Specifications</p>
       
-      <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 6px 0;">Bespoke Data</p>
-      <div style="margin-bottom: 20px; font-size: 14px;">
-        <p style="margin: 4px 0;"><strong>Name:</strong> ${petName || '미상'}</p>
-        <p style="margin: 4px 0;"><strong>Birth:</strong> ${petBirth || '미상'}</p>
-        <div style="display: flex; align-items: center; margin: 4px 0;">
-          <strong>멍스널컬러:</strong> <span style="margin-left: 8px;">${brandColor || '미지정'}</span>
-          ${brandColor ? `<span style="display: inline-block; width: 14px; height: 14px; background-color: ${brandColor}; border-radius: 50%; border: 1px solid #3f3f46; margin-left: 6px; vertical-align: middle;"></span>` : ''}
+      <p style="font-size: 16px; font-weight: bold; margin: 0 0 8px 0; color: #ffffff;">${itemName}</p>
+      ${totalEditions ? `
+        <p style="color: #ef4444; font-size: 11px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin: 0 0 20px 0;">
+          [전 세계 ${totalEditions}개 한정 생산 작품]
+        </p>
+      ` : ''}
+      <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+        ${productImage ? `<img src="${productImage}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #3f3f46;" />` : ''}
+        <div style="font-size: 13px; color: #e4e4e7; padding-top: 4px;">
+          <p style="margin: 0 0 6px 0;"><strong>Material:</strong> ${material || '기본 프리미엄 원단'}</p>
+          <p style="margin: 0 0 6px 0;"><strong>Dimensions:</strong> ${dimensions || '기본 사이즈'}</p>
         </div>
       </div>
       
@@ -80,7 +89,11 @@ const generateArtistCardHtml = (
 `;
 
 // 💎 블랙 플래티넘 HTML 이메일 제너레이터
-const generateLuxuryEmailHtml = (customerName: string, itemName: string, messageData: any) => {
+const generateLuxuryEmailHtml = (customerName: string, itemName: string, messageData: any,
+  productImage: string, 
+  material: string, 
+  dimensions: string,
+  totalEditions?: number) => {
   // 🍏 [핵심] 1단계일 때는 '배송지 입력창'으로, 나머지는 '아카이브(Vault)'로 동적 연결합니다.
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const isPaymentConfirmed = messageData.step === "STEP 01 : PAYMENT CONFIRMED";
@@ -109,10 +122,32 @@ const generateLuxuryEmailHtml = (customerName: string, itemName: string, message
               ${messageData.desc}
             </p>
             
+            <p style="color: #71717a; font-size: 10px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 16px 0;">
+            Private Order Details
+          </p>
+
+          ${totalEditions ? `
+            <div style="display: inline-block; background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); padding: 4px 12px; border-radius: 20px; margin-bottom: 16px;">
+              <span style="color: #ef4444; font-size: 10px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;">
+                Strictly Limited to ${totalEditions} Editions
+              </span>
+            </div>
+          ` : ''}
+
             <div style="background-color: #000000; border: 1px solid #27272a; border-radius: 12px; padding: 24px; margin-bottom: 40px;">
               <p style="font-size: 10px; color: #71717a; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 2px;">Bespoke Edition</p>
               <p style="font-size: 16px; color: #ffffff; font-weight: 300; margin: 0; letter-spacing: 1px;">${itemName}</p>
             </div>
+            <p style="font-size: 20px; font-weight: bold; margin: 0 0 16px 0; letter-spacing: -0.5px;">${itemName}</p>
+                  
+                  ${productImage ? `
+                    <div style="margin-bottom: 24px;">
+                      <img src="${productImage}" alt="${itemName}" style="max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #27272a;" />
+                    </div>
+                  ` : ''}
+                  
+                  ${material ? `<p style="color: #a1a1aa; font-size: 12px; margin: 0 0 24px 0;">${material} &middot; ${dimensions}</p>` : ''}
+
           </div>
           
           <a href="${targetUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; text-decoration: none; padding: 18px 36px; border-radius: 30px; font-size: 11px; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; transition: opacity 0.3s;">
@@ -137,7 +172,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     // 🍏 프론트엔드에서 넘어오는 작가 정보(artistEmail)를 추가로 받습니다.
-    const { orderId, status, customerName, customerEmail, itemName, artistEmail, petName, petBirth, brandColor, petImage } = body;    // 💎 [조명탄 투척] 백엔드에 도착한 데이터의 실체를 낱낱이 밝혀냅니다.
+    const { orderId, status, customerName, customerEmail, itemName, artistEmail, petName, petBirth, brandColor, petImage, productImage, material, dimensions, totalEditions } = body;
     console.log("🚨 [WEBHOOK X-RAY] 수신된 데이터 상태:");
     console.log(`- 현재 상태(status): ${status}`);
     console.log(`- 작가 이메일(artistEmail): ${artistEmail || "❌ 데이터 없음 (프론트에서 안 보냄!)"}`);
@@ -158,7 +193,7 @@ export async function POST(req: Request) {
       from: 'PAWTRAIT EDITION Concierge <concierge@pawtraitedition.com>',
       to: targetEmail,
       subject: `[PAWTRAIT EDITION] ${messageData.title}: 여정의 업데이트`,
-      html: generateLuxuryEmailHtml(customerName, itemName, messageData),
+      html: generateLuxuryEmailHtml(customerName, itemName, messageData, productImage, material, dimensions,totalEditions),
     });
     console.log(`[Email Sent] VIP Customer: ${targetEmail}`);
 
@@ -168,7 +203,7 @@ export async function POST(req: Request) {
         from: 'PAWTRAIT EDITION Work Desk <concierge@pawtraitedition.com>',
         to: artistEmail,
         subject: `[작업 지시서] ${itemName} 의뢰가 도착했습니다.`,
-        html: generateArtistCardHtml(orderId, itemName, customerName, petName, petBirth, brandColor, petImage),
+        html: generateArtistCardHtml(orderId, itemName, customerName, petName, petBirth, brandColor, petImage, productImage, material, dimensions,totalEditions),
       });
       console.log(`[Email Sent] Artist Work Order: ${artistEmail}`);
     }

@@ -9,6 +9,12 @@ export interface CheckoutItem {
   price: string;
   category?: string; // 🍏 추가!
   imageUrl?: string;
+  // 🍏 [추가됨] DB에서 가져올 스펙 데이터
+  material?: string;
+  dimensions?: string;
+  productImage?: string; // 상품 자체의 썸네일 이미지
+  petName?: string;      // (기존 Vault에서 넘겨주는 이름)
+  total_editions?: number;
 }
 
 interface CheckoutModalProps {
@@ -22,6 +28,8 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
     const [isSuccess, setIsSuccess] = useState(false);
     const [remainingCount, setRemainingCount] = useState<number | null>(null);
     const [totalEditions, setTotalEditions] = useState<number>(100); // 🍏 분모(전체 수량) 상태 추가
+    // 🍏 [방어선 1] 맞춤 제작 동의 상태 추가
+    const [isAgreed, setIsAgreed] = useState(false);
     
     const isOpen = item !== null;
       
@@ -121,105 +129,93 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
       
       <div className={`absolute bottom-0 left-0 w-full bg-[#0a0a0a] border-t border-zinc-800 rounded-t-[32px] p-6 pb-12 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isOpen ? "translate-y-0" : "translate-y-full"} shadow-[0_-20px_50px_rgba(0,0,0,0.8)]`}>
         
-        <div className="w-12 h-1.5 bg-zinc-700 rounded-full mx-auto mb-6" />
+        {/* 💎 투박한 회색 손잡이를 제거하고, 프라이빗 컨시어지 느낌의 우아한 헤더로 교체합니다. */}
+        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+          <h3 className="text-[10px] font-bold text-zinc-500 tracking-[0.2em] uppercase">Private Concierge</h3>
+        </div>
+        
+        <button 
+          onClick={onClose} 
+          className="text-[10px] text-zinc-400 font-bold tracking-widest uppercase border border-zinc-800 px-3 py-1.5 rounded-full hover:bg-zinc-800 hover:text-white transition-all active:scale-95"
+        >
+          Close
+        </button>
+              </div>
         
         {item && (
           <div className="relative">
             
-            <div className={`transition-all duration-500 flex flex-col items-center ${isSuccess ? "opacity-0 absolute inset-0 pointer-events-none scale-95" : "opacity-100 scale-100"}`}>
+            <div className={`transition-all duration-500 flex flex-col ${isSuccess ? "opacity-0 absolute inset-0 pointer-events-none scale-95" : "opacity-100 scale-100"}`}>
               
-              <div className="w-24 h-24 rounded-full border border-zinc-800 bg-zinc-950 flex items-center justify-center mb-6 relative overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                <div className="absolute inset-0 opacity-20" style={{ backgroundColor: dominantColor }} />
+              {/* 💎 1. 프라이빗 오더 티켓 (결제 확신을 주는 요약본) */}
+              <div className="mb-8 p-5 bg-zinc-900/60 border border-zinc-800/80 rounded-[24px] backdrop-blur-md relative overflow-hidden shadow-2xl">
+                {/* 상단 럭셔리 하이라이트 라인 */}
+                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-zinc-500 to-transparent opacity-50"></div>
                 
-                {/* 🍏 아이콘 렌더링 로직 변경 */}
-                {item.category === 'case' && (
-                  <div className="w-8 h-14 border-2 rounded-[6px] relative flex justify-end p-1" style={{ borderColor: dominantColor }}>...</div>
-                )}
-                {item.category === 'frame' && (
-                  <div className="w-12 h-14 border-2 border-zinc-700 rounded-sm relative flex items-center justify-center">...</div>
-                )}
-                {item.category === 'collar' && (
-                  <div className="w-12 h-12 border-[3px] rounded-full relative">...</div>
-                )}
-                
-                {/* Wallet 클로즈업 */}
-                {item.category === 'wallet' && (
-                  <div className="w-12 h-16 border-2 rounded-lg relative flex flex-col items-center pt-2" style={{ borderColor: dominantColor }}>
-                    <div className="w-7 h-4 border-t-2 border-l-2 border-r-2 rounded-t opacity-60" style={{ borderColor: dominantColor }} />
-                    <div className="w-10 h-0.5 mt-1.5 opacity-80" style={{ backgroundColor: dominantColor }} />
-                    <div className="w-10 h-0.5 mt-2 opacity-40" style={{ backgroundColor: dominantColor }} />
-                  </div>
-                )}
+                {/* 🍏 희소성 뱃지 (티켓 우측 상단에 절대 위치로 고정) */}
+                <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-full shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping absolute" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 relative" />
+                  <span className="text-[8px] font-bold text-red-500 tracking-[0.2em] uppercase">
+                    {remainingCount === null ? "Syncing..." : remainingCount <= 0 ? "Sold Out" : `${remainingCount} / ${totalEditions} Left`}
+                  </span>
+                </div>
 
-                {/* Harness 클로즈업 */}
-                {item.category === 'harness' && (
-                  <div className="w-16 h-16 relative flex flex-col items-center mt-2">
-                    <div className="w-7 h-5 border-2 border-b-0 rounded-t-full mt-2" style={{ borderColor: dominantColor }} />
-                    <div className="w-2 h-4 opacity-80" style={{ backgroundColor: dominantColor }} />
-                    <div className="w-14 h-4 border-2 rounded-full" style={{ borderColor: dominantColor }} />
-                    <div className="absolute top-0 w-3 h-2 border-2 border-zinc-400 rounded-t-sm" />
+                <div className="flex gap-5 items-center mt-2">
+                  {/* 좌측: 상품 사진 또는 강아지 썸네일 */}
+                  <div className="relative w-20 h-24 rounded-2xl overflow-hidden shrink-0 border border-zinc-700 bg-black shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+                    {item.productImage || item.imageUrl ? (
+                      <img src={item.productImage || item.imageUrl} alt="Masterpiece" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-[8px] text-zinc-600 font-mono tracking-widest">NO ASSET</span>
+                      </div>
+                    )}
+                    {/* 아우라 컬러 오버레이 틴트 */}
+                    <div className="absolute inset-0 opacity-20 mix-blend-color transition-colors duration-1000" style={{ backgroundColor: dominantColor }} />
                   </div>
-                )}
 
-                {/* Keyring 클로즈업 */}
-                {item.category === 'keyring' && (
-                  <div className="w-12 h-16 relative flex flex-col items-center">
-                    <div className="w-5 h-5 border-2 rounded-full" style={{ borderColor: dominantColor }} />
-                    <div className="w-1 h-3 opacity-50" style={{ backgroundColor: dominantColor }} />
-                    <div className="w-8 h-8 border-2 rounded-sm rotate-45 mt-2 relative flex items-center justify-center" style={{ borderColor: dominantColor }}>
-                      <div className="w-3 h-3 rounded-full opacity-30" style={{ backgroundColor: dominantColor }} />
+                  {/* 우측: 텍스트 요약 */}
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      {/* 컬러 뱃지 */}
+                      <div 
+                        className="w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor] transition-colors duration-1000" 
+                        style={{ backgroundColor: dominantColor || '#ffffff', color: dominantColor || '#ffffff' }}
+                      />
+                      {/* 에셋 번호 */}
+                      <span className="text-[10px] text-zinc-400 font-mono uppercase tracking-widest truncate">
+                        {item.id ? `ASSET-${item.id.substring(0,4)}` : "PRIVATE EDITION"}
+                      </span>
+                    </div>
+                    
+                    <h4 className="text-lg font-serif font-bold text-white leading-tight mb-1 truncate">
+                      {item.name}
+                    </h4>
+                    
+                    {item.petName && (
+                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3">
+                        Bespoke for {item.petName}
+                      </p>
+                    )}
+                    
+                    {/* 🍏 [핵심] DB에서 불러온 정제된 스펙 (단 한 줄의 고급스러움) */}
+                    <div className="flex flex-col gap-0.5 mt-auto">
+                      {item.material && <span className="text-[9px] text-zinc-400 font-mono tracking-wider truncate">· {item.material}</span>}
+                      {item.dimensions && <span className="text-[9px] text-zinc-400 font-mono tracking-wider truncate">· {item.dimensions}</span>}
+                      {/* 스펙이 비어있을 경우의 기본값 */}
+                      {!item.material && !item.dimensions && <span className="text-[9px] text-zinc-400 font-mono tracking-wider">· Premium Material & Custom Fit</span>}
                     </div>
                   </div>
-                )}
-
-                {/* Pendant 클로즈업 */}
-                {item.category === 'pendant' && (
-                  <div className="w-14 h-16 relative flex flex-col items-center pt-1">
-                    <div className="w-2.5 h-2.5 border-2 rounded-full z-10 bg-zinc-950" style={{ borderColor: dominantColor }} />
-                    <div className="w-12 h-12 border-[3px] rounded-full -mt-1 flex items-center justify-center relative shadow-[0_0_20px_rgba(255,255,255,0.05)]" style={{ borderColor: dominantColor }}>
-                      <div className="w-8 h-8 border-[1.5px] border-dashed rounded-full opacity-50" style={{ borderColor: dominantColor }} />
-                    </div>
-                  </div>
-                )}
-                {/* Strap 클로즈업 */}
-                {item.category === 'strap' && (
-                  <div className="w-8 h-20 border-2 rounded-full relative flex flex-col items-center pt-1.5" style={{ borderColor: dominantColor }}>
-                    <div className="w-5 h-4 border-2 rounded-sm" style={{ borderColor: dominantColor }} />
-                    <div className="w-1.5 h-1.5 rounded-full mt-3 opacity-50 transition-all duration-1000 animate-pulse" style={{ backgroundColor: dominantColor }} />
-                    <div className="w-1.5 h-1.5 rounded-full mt-2 opacity-50" style={{ backgroundColor: dominantColor }} />
-                    <div className="w-1.5 h-1.5 rounded-full mt-2 opacity-50" style={{ backgroundColor: dominantColor }} />
-                  </div>
-                )}
-
-                {/* 커스텀 다이아몬드 */}
-                {!['case', 'frame', 'collar', 'wallet', 'harness', 'keyring', 'pendant','strap'].includes(item.category || '') && (
-                   <div className="w-10 h-10 rotate-45 border-2" style={{ borderColor: dominantColor }}></div>
-                )}
+                </div>
               </div>
 
-              {/* 🍏 진정한 희소성의 시각화 (분모 포함) */}
-              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-3 py-1.5 rounded-full mb-3 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping absolute" />
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500 relative" />
-                <span className="text-[10px] font-bold text-red-500 tracking-[0.2em] uppercase">
-                  {remainingCount === null 
-                    ? "Syncing Live Stock..." 
-                    : remainingCount <= 0 
-                      ? `Fully Sold Out (${totalEditions} Editions)` 
-                      : `${remainingCount} / ${totalEditions} Editions Left`}
-                </span>
-              </div>
-
-              <h2 className="text-2xl font-serif font-bold text-white mb-2">{item.name}</h2>
-              <div className="flex items-center gap-2 mb-8">
-                <span className="text-[10px] text-zinc-400 uppercase tracking-widest border border-zinc-700 px-2 py-0.5 rounded">
-                  Bespoke Color: {dominantColor || "Signature"}
-                </span>
-              </div>
-
-              <div className="w-full bg-black border border-zinc-800 rounded-3xl p-5 mb-4 flex justify-between items-center">
+              {/* 2. 결제 가격 및 Bespoke Process (이전 코드의 <div className="w-full bg-black border... 부터 시작) */}
+              <div className="w-full bg-black border border-zinc-800 rounded-3xl p-5 mb-6 flex justify-between items-center shadow-lg">
                 <span className="text-xs text-zinc-500 tracking-widest uppercase font-bold">Exclusive Price</span>
-                <span className="text-xl font-mono font-bold text-white">{item.price}</span>
+                <span className="text-2xl font-mono font-bold text-white">{item.price}</span>
               </div>
 
               {/* 🍏 장인의 여정 (Bespoke Process) 섹션 */}
@@ -253,7 +249,7 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
                 `}</style>
 
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.3em]">Bespoke Journey</h3>
+                    <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-[0.3em]">수공예품 제작 과정</h3>
                     <span className="text-[9px] text-zinc-600 font-mono">{item.category === 'frame' ? 'Artisan Grade' : 'Master Craftsmanship'}</span>
                 </div>
 
@@ -294,7 +290,7 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
                         </div>
                         
                         {/* 텍스트 영역 (빛을 받으면 밝기(Brightness)가 증폭되며 화이트톤으로 변함) */}
-                        <span className="text-[9px] font-bold text-zinc-400 mb-1 uppercase tracking-tighter">{proc.label}</span>
+                        <span className="text-[9px] font-bold text-zinc-100 mb-1 uppercase tracking-tighter">{proc.label}</span>
                         <span className="text-[8px] text-zinc-500 break-keep text-center">{proc.desc}</span>
                         
                         {/* 5. 💎 텍스트가 점화될 때 정수리에서 정확히 함께 터지는 빛의 파동 */}
@@ -311,6 +307,23 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
                 </div>
               </div>
 
+              {/* 💎 [방어선 2] 비스포크 맞춤 제작 동의 서약서 */}
+              <div 
+                className="mb-6 bg-zinc-900/40 border border-zinc-800 rounded-xl p-4 flex gap-3 items-start cursor-pointer hover:bg-zinc-900/60 transition-colors" 
+                onClick={() => setIsAgreed(!isAgreed)}
+              >
+                <div className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center shrink-0 border transition-all duration-300 ${isAgreed ? 'bg-white border-white text-black' : 'bg-black border-zinc-700 text-transparent'}`}>
+                  {/* 체크 마크 아이콘 */}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <p className="text-[11px] text-zinc-400 leading-relaxed tracking-wide">
+                  <span className="text-red-400 font-bold tracking-widest mr-1">[필수]</span> 
+                  본 에디션은 고객님의 반려견만을 위한 <strong className="text-zinc-200 font-bold">1:1 맞춤 세공(Bespoke)</strong> 작품입니다. 현장 결제 및 제작 착수 이후에는 <strong className="text-zinc-200 font-bold">단순 변심으로 인한 주문 취소 및 환불이 불가</strong>함을 확인하고 동의합니다.
+                </p>
+              </div>
+
               <button 
                 onClick={handleSecureEdition}
                 disabled={isSubmitting || remainingCount === 0} // 🍏 완판 시 버튼 비활성화
@@ -325,7 +338,7 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
                 ) : remainingCount === 0 ? (
                   <>SOLD OUT (완판)</>
                 ) : (
-                  <>Secure My Edition (선점하기)</>
+                  <> PAWTRAIt EDITION 예약하기 </>
                 )}
               </button>
             </div>
@@ -343,7 +356,7 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
               
               <div className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 text-center mb-6">
                 <p className="text-sm text-zinc-300 font-light leading-relaxed break-keep">
-                  고객님의 에디션 1개가 <strong className="text-white font-bold">성공적으로 홀딩(선점)</strong> 되었습니다. 
+                  고객님의 에디션 1개가 <strong className="text-white font-bold">성공적으로 예약</strong> 되었습니다. 
                   <br/><br/>
                   페어 현장에 위치한 <strong className="text-white font-bold text-blue-400">PAWTRAIT EDITION 컨시어지 데스크</strong>에 
                   이 화면을 보여주시고 결제를 완료하여 소유권을 최종 확정해 주십시오.

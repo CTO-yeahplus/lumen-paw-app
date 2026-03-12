@@ -24,7 +24,10 @@ export default function EditionDropDesk() {
     craftsmanship: "이탈리아산 프리미엄 베지터블 레더",
     lead_time: "주문 확인 후 장인의 수작업으로 3주 소요",
     artist_name: "",  // 🍏 추가됨
-    artist_email: ""  // 🍏 추가됨
+    artist_email: "",  // 🍏 추가됨
+    image_url: "",
+    material: "Premium ITALY Leather",
+    dimensions: "12 x 120 mm",
   };
 
   const [formData, setFormData] = useState(initialFormState);
@@ -68,10 +71,39 @@ export default function EditionDropDesk() {
       craftsmanship: product.craftsmanship || "",
       lead_time: product.lead_time || "",
       artist_name: product.artist_name || "",
-      artist_email: product.artist_email || ""
+      artist_email: product.artist_email || "",
+      image_url: product.image_url || "",
+      material: product.material || "",
+      dimensions: product.dimensions || "",
     });
     // 스크롤을 맨 위로 올려 폼을 보여줌
     window.scrollTo({ top: 0, behavior: "smooth" }); 
+  };
+
+  // 💎 로컬 이미지를 Supabase Storage에 업로드하고 주소를 받아오는 함수
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 업로드 중 텍스트 표시 (선택사항)
+    setFormData({ ...formData, image_url: "Uploading..." });
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('products') // Step 1에서 만든 버킷 이름
+      .upload(filePath, file);
+
+    if (uploadError) {
+      alert('이미지 업로드에 실패했습니다.');
+      setFormData({ ...formData, image_url: "" });
+      return;
+    }
+
+    const { data } = supabase.storage.from('products').getPublicUrl(filePath);
+    setFormData({ ...formData, image_url: data.publicUrl });
   };
 
   // 🍏 취소 버튼 (수정 모드 해제)
@@ -165,6 +197,54 @@ export default function EditionDropDesk() {
                   <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Artist Email (작가 이메일)</label>
                   <input type="email" value={formData.artist_email} onChange={e => setFormData({...formData, artist_email: e.target.value})} placeholder="artist@example.com" className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors" />
                 </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-zinc-800">
+                <h4 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Physical Specifications (실물 스펙)</h4>
+                
+                {/* 🚨 기존의 type="text" 였던 Product Image URL 부분을 아래 코드로 완전히 교체합니다. */}
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Product Image (로컬 썸네일 업로드)</label>
+                  <div className="flex items-center gap-4">
+                    {/* 업로드된 이미지가 있으면 작게 미리보기 제공 */}
+                    {formData.image_url && formData.image_url !== "Uploading..." && (
+                      <div className="w-12 h-12 rounded-lg border border-zinc-700 overflow-hidden shrink-0">
+                        <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleImageUpload} 
+                      className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-zinc-400 focus:border-white outline-none transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:tracking-widest file:bg-zinc-800 file:text-white hover:file:bg-zinc-700" 
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Material (소재/원단)</label>
+                    <input type="text" value={formData.material} onChange={e => setFormData({...formData, material: e.target.value})} placeholder="Premium Vegan Leather" className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Dimensions (사이즈)</label>
+                    <input type="text" value={formData.dimensions} onChange={e => setFormData({...formData, dimensions: e.target.value})} placeholder="140 x 200 mm" className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors" />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                  Total Editions (총 발행 수량)
+                </label>
+                <input 
+                  type="number" 
+                  min="1"
+                  value={formData.total_editions} 
+                  onChange={e => setFormData({...formData, total_editions: parseInt(e.target.value) || 1})} 
+                  className="w-full bg-black border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white focus:border-white outline-none transition-colors font-mono" 
+                />
               </div>
               
               <div>

@@ -45,20 +45,25 @@ export default function AdminOrdersPage() {
         const targetName = order.contact_name || joinedUser?.full_name || 'VIP Member';
         const targetEmail = order.contact_email || joinedUser?.email;
         
-        // 💎 [정밀 타격 로직] 상태를 변경할 때, 해당 상품의 작가 이메일만 단독으로 조용히 꺼내옵니다.
-        let artistEmail = "";
+        // 💎 [정밀 타격 로직] 기존 코드에 total_editions 를 추가로 가져옵니다.
+        let artistEmail = "", productImage = "", material = "", dimensions = "", totalEditions = 100;
         try {
           const { data: productData } = await supabase
             .from("products")
-            .select("artist_email")
-            .eq("name", order.item_name) // 상품명으로 작가 이메일을 검색합니다
+            // 🍏 total_editions를 SELECT 명단에 추가합니다.
+            .select("artist_email, image_url, material, dimensions, total_editions") 
+            .eq("name", order.item_name)
             .maybeSingle(); 
             
-          if (productData?.artist_email) {
-            artistEmail = productData.artist_email;
+          if (productData) {
+            artistEmail = productData.artist_email || "";
+            productImage = productData.image_url || "";
+            material = productData.material || "";
+            dimensions = productData.dimensions || "";
+            totalEditions = productData.total_editions || 100; // 🍏 한정 수량 확보
           }
         } catch (err) {
-          console.error("⚠️ 작가 이메일 추출 실패 (무시하고 진행):", err);
+          console.error("⚠️ 상품 스펙 추출 실패:", err);
         }
 
         try {
@@ -72,13 +77,14 @@ export default function AdminOrdersPage() {
               customerEmail: targetEmail,
               itemName: order.item_name,
               artistEmail: artistEmail,
-              
-              // 💎 [핵심 추가 배관] 작가를 위한 영감(Inspiration) 데이터 탑재
-              // DB의 컬럼명에 맞게 매핑해 줍니다.
               petName: order.pet_name || "",
               petBirth: order.pet_birth || "",
-              brandColor: order.dominant_color || "", 
-              petImage: order.image_url || ""
+              brandColor: order.dominant_color || order.brand_color || "", 
+              petImage: order.image_url || order.target_image || "",
+              productImage,
+              material,
+              dimensions,
+              totalEditions // 💎 확보한 한정 수량을 웹훅 상자에 탑재!
             }),
           });
           console.log(`🍏 Webhook triggered for ${newStatus} (Artist: ${artistEmail || "None"})`);

@@ -11,6 +11,7 @@ import PrivateVaultTab from "@/components/vault/PrivateVaultTab";
 import EditorialTab from "@/components/vault/EditorialTab";
 import MuseTab from "@/components/vault/MuseTab";
 import BottomNav from "@/components/navigation/BottomNav";
+import PWAInstallBanner from "@/components/pwa/PWAInstallBanner";
 
 interface EditorialType { id: string; slug: string; title: string; image_url: string; content: string; }
 type TabType = "vault" | "editorial" | "muse";
@@ -221,6 +222,8 @@ function VaultContent() {
       <WaitlistModal isOpen={isWaitlistModalOpen} concept={selectedConcept} onClose={() => setIsWaitlistModalOpen(false)} />
       <ProfileModal isOpen={isProfileModalOpen} onClose={() => setIsProfileModalOpen(false)} dominantColor={dominantColor}/>
       <CheckoutModal item={checkoutItem} dominantColor={dominantColor} onClose={() => setCheckoutItem(null)} />
+      {/* 💎 고객이 Vault에 들어왔을 때 우아하게 PWA 설치를 제안합니다 */}
+      <PWAInstallBanner />
     </main>
   );
 }
