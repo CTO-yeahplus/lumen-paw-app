@@ -176,7 +176,6 @@ function VaultContent() {
           // 🍏 추가됨: 부모가 가진 강아지 이름과 생일을 자식에게 건네줍니다.
           displayPetName={displayPetName}
           displayPetBirth={displayPetBirth}
-
         />
       </div>
 

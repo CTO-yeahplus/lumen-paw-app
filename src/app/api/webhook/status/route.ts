@@ -57,10 +57,26 @@ const generateArtistCardHtml = (
     
     ${petImage ? `<img src="${petImage}" alt="Reference Image" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 12px; margin-bottom: 24px; border: 1px solid #27272a;" />` : ''}
     
-    <div style="background-color: #18181b; border: 1px solid #27272a; border-radius: 12px; padding: 24px; margin-bottom: 32px;">
-  
+    <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 12px 0;">Bespoke Target Profile</p>
+      <div style="background-color: #0a0a0a; border: 1px solid #27272a; border-radius: 8px; padding: 16px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="color: #71717a; font-size: 12px;">Pet Name</span>
+          <span style="color: #ffffff; font-weight: bold; font-size: 14px; letter-spacing: 1px;">${petName || '이름 미상'}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="color: #71717a; font-size: 12px;">Birth Date</span>
+          <span style="color: #d4d4d8; font-family: monospace; font-size: 12px;">${petBirth || '생일 미상'}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="color: #71717a; font-size: 12px;">Aura Color</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${brandColor || '#ffffff'}; border: 1px solid #3f3f46;"></div>
+            <span style="color: #d4d4d8; font-family: monospace; font-size: 12px; text-transform: uppercase;">${brandColor || '#FFFFFF'}</span>
+          </div>
+        </div>
+      </div>
+
       <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 6px 0;">Product Specifications</p>
-      
       <p style="font-size: 16px; font-weight: bold; margin: 0 0 8px 0; color: #ffffff;">${itemName}</p>
       ${totalEditions ? `
         <p style="color: #ef4444; font-size: 11px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; margin: 0 0 20px 0;">
@@ -93,7 +109,11 @@ const generateLuxuryEmailHtml = (customerName: string, itemName: string, message
   productImage: string, 
   material: string, 
   dimensions: string,
-  totalEditions?: number) => {
+  totalEditions?: number,
+  petName?: string,   // 🍏 추가
+  petBirth?: string,  // 🍏 추가
+  brandColor?: string // 🍏 추가
+  ) => {
   // 🍏 [핵심] 1단계일 때는 '배송지 입력창'으로, 나머지는 '아카이브(Vault)'로 동적 연결합니다.
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
   const isPaymentConfirmed = messageData.step === "STEP 01 : PAYMENT CONFIRMED";
@@ -136,6 +156,23 @@ const generateLuxuryEmailHtml = (customerName: string, itemName: string, message
 
             <div style="background-color: #000000; border: 1px solid #27272a; border-radius: 12px; padding: 24px; margin-bottom: 40px;">
               <p style="font-size: 10px; color: #71717a; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 2px;">Bespoke Edition</p>
+              <p style="font-size: 16px; color: #ffffff; font-weight: 300; margin: 0 0 16px 0; letter-spacing: 1px;">${itemName}</p>
+              
+              <div style="border-top: 1px solid #18181b; padding-top: 16px; margin-top: 16px; display: inline-flex; flex-direction: column; align-items: center; gap: 8px;">
+                <p style="margin: 0; color: #d4d4d8; font-size: 12px; letter-spacing: 1px;">
+                  <strong style="color: #a1a1aa; font-weight: normal; margin-right: 4px;">For.</strong> ${petName || 'My Pet'} 
+                  <span style="color: #3f3f46; margin: 0 6px;">|</span> 
+                  <span style="font-family: monospace; color: #71717a;">${petBirth || ''}</span>
+                </p>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="color: #71717a; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">Aura Color</span>
+                  <div style="width: 10px; height: 10px; border-radius: 50%; background-color: ${brandColor || '#ffffff'}; box-shadow: 0 0 8px ${brandColor || '#ffffff'}80;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div style="background-color: #000000; border: 1px solid #27272a; border-radius: 12px; padding: 24px; margin-bottom: 40px;">
+              <p style="font-size: 10px; color: #71717a; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 2px;">Bespoke Edition</p>
               <p style="font-size: 16px; color: #ffffff; font-weight: 300; margin: 0; letter-spacing: 1px;">${itemName}</p>
             </div>
             <p style="font-size: 20px; font-weight: bold; margin: 0 0 16px 0; letter-spacing: -0.5px;">${itemName}</p>
@@ -171,11 +208,13 @@ const generateLuxuryEmailHtml = (customerName: string, itemName: string, message
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+        // 💎 [CSO의 검문소] 프론트엔드가 보낸 모든 택배 상자를 뜯어서 터미널에 출력합니다.
+    console.log("=====================================");
+    console.log("📦 [Webhook 수신 데이터 전체]:", JSON.stringify(body, null, 2));
+    console.log("🔍 [Product Image 단독 확인]:", body.productImage ? body.productImage : "❌ 텅 비어있음 (전달 안 됨)");
+    console.log("=====================================");
     // 🍏 프론트엔드에서 넘어오는 작가 정보(artistEmail)를 추가로 받습니다.
     const { orderId, status, customerName, customerEmail, itemName, artistEmail, petName, petBirth, brandColor, petImage, productImage, material, dimensions, totalEditions } = body;
-    console.log("🚨 [WEBHOOK X-RAY] 수신된 데이터 상태:");
-    console.log(`- 현재 상태(status): ${status}`);
-    console.log(`- 작가 이메일(artistEmail): ${artistEmail || "❌ 데이터 없음 (프론트에서 안 보냄!)"}`);
 
     if (!statusMessages[status]) {
       return NextResponse.json({ success: true, message: "알림 대상 상태가 아님" });
@@ -193,7 +232,7 @@ export async function POST(req: Request) {
       from: 'PAWTRAIT EDITION Concierge <concierge@pawtraitedition.com>',
       to: targetEmail,
       subject: `[PAWTRAIT EDITION] ${messageData.title}: 여정의 업데이트`,
-      html: generateLuxuryEmailHtml(customerName, itemName, messageData, productImage, material, dimensions,totalEditions),
+      html: generateLuxuryEmailHtml(customerName, itemName, messageData, productImage, material, dimensions,totalEditions, petName, petBirth, brandColor),
     });
     console.log(`[Email Sent] VIP Customer: ${targetEmail}`);
 
@@ -202,7 +241,7 @@ export async function POST(req: Request) {
       await resend.emails.send({
         from: 'PAWTRAIT EDITION Work Desk <concierge@pawtraitedition.com>',
         to: artistEmail,
-        subject: `[작업 지시서] ${itemName} 의뢰가 도착했습니다.`,
+        subject: `[PAWTRAIT EDITION 주문서] ${itemName} 의뢰가 도착했습니다.`,
         html: generateArtistCardHtml(orderId, itemName, customerName, petName, petBirth, brandColor, petImage, productImage, material, dimensions,totalEditions),
       });
       console.log(`[Email Sent] Artist Work Order: ${artistEmail}`);
