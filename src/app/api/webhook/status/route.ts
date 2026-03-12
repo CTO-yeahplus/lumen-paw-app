@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
+import { createClient } from "@supabase/supabase-js";
 
 // Resend 초기화 (API 키 연동)
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -60,15 +61,17 @@ const generateArtistCardHtml = (
     <p style="color: #a1a1aa; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 12px 0;">Bespoke Target Profile</p>
       <div style="background-color: #0a0a0a; border: 1px solid #27272a; border-radius: 8px; padding: 16px; margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="color: #71717a; font-size: 12px;">Pet Name</span>
+          <span style="color: #71717a; font-size: 12px;">Pet Name </span>
           <span style="color: #ffffff; font-weight: bold; font-size: 14px; letter-spacing: 1px;">${petName || '이름 미상'}</span>
         </div>
+        <span style="color: #3f3f46; margin: 0 6px;">|</span> 
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="color: #71717a; font-size: 12px;">Birth Date</span>
+          <span style="color: #71717a; font-size: 12px;">Birth Date </span>
           <span style="color: #d4d4d8; font-family: monospace; font-size: 12px;">${petBirth || '생일 미상'}</span>
         </div>
+        <span style="color: #3f3f46; margin: 0 6px;">|</span> 
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span style="color: #71717a; font-size: 12px;">Aura Color</span>
+          <span style="color: #71717a; font-size: 12px;">멍스널컬러 </span>
           <div style="display: flex; align-items: center; gap: 6px;">
             <div style="width: 12px; height: 12px; border-radius: 50%; background-color: ${brandColor || '#ffffff'}; border: 1px solid #3f3f46;"></div>
             <span style="color: #d4d4d8; font-family: monospace; font-size: 12px; text-transform: uppercase;">${brandColor || '#FFFFFF'}</span>
@@ -119,7 +122,7 @@ const generateLuxuryEmailHtml = (customerName: string, itemName: string, message
   const isPaymentConfirmed = messageData.step === "STEP 01 : PAYMENT CONFIRMED";
   
   const targetUrl = isPaymentConfirmed ? `${baseUrl}/claim/address?order=${messageData.orderId}` : `${baseUrl}/vault`;
-  const buttonText = isPaymentConfirmed ? "프라이빗 배송지 입력하기" : "Private Archive 입장하기";
+  const buttonText = isPaymentConfirmed ? "프라이빗 배송지 입력하기" : "내 갤러리 확인하기";
 
   return `
     <!DOCTYPE html>
@@ -162,29 +165,27 @@ const generateLuxuryEmailHtml = (customerName: string, itemName: string, message
                 <p style="margin: 0; color: #d4d4d8; font-size: 12px; letter-spacing: 1px;">
                   <strong style="color: #a1a1aa; font-weight: normal; margin-right: 4px;">For.</strong> ${petName || 'My Pet'} 
                   <span style="color: #3f3f46; margin: 0 6px;">|</span> 
-                  <span style="font-family: monospace; color: #71717a;">${petBirth || ''}</span>
+                  <span style="font-family: monospace; color: #71717a;"> Born on ${petBirth || ''}</span>
+
+                  <span style="color: #3f3f46; margin: 0 6px;">|</span> 
+
+                  <span style="color: #71717a; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">멍스널컬러 </span>
+                  <div style="width: 14px; height: 14px; border-radius: 50%; background-color: ${brandColor || '#ffffff'}; box-shadow: 0 0 8px ${brandColor || '#ffffff'}80;"></div>
                 </p>
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="color: #71717a; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;">Aura Color</span>
-                  <div style="width: 10px; height: 10px; border-radius: 50%; background-color: ${brandColor || '#ffffff'}; box-shadow: 0 0 8px ${brandColor || '#ffffff'}80;"></div>
-                </div>
               </div>
             </div>
 
             <div style="background-color: #000000; border: 1px solid #27272a; border-radius: 12px; padding: 24px; margin-bottom: 40px;">
-              <p style="font-size: 10px; color: #71717a; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 2px;">Bespoke Edition</p>
-              <p style="font-size: 16px; color: #ffffff; font-weight: 300; margin: 0; letter-spacing: 1px;">${itemName}</p>
-            </div>
-            <p style="font-size: 20px; font-weight: bold; margin: 0 0 16px 0; letter-spacing: -0.5px;">${itemName}</p>
-                  
-                  ${productImage ? `
-                    <div style="margin-bottom: 24px;">
-                      <img src="${productImage}" alt="${itemName}" style="max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #27272a;" />
-                    </div>
-                  ` : ''}
-                  
-                  ${material ? `<p style="color: #a1a1aa; font-size: 12px; margin: 0 0 24px 0;">${material} &middot; ${dimensions}</p>` : ''}
+              ${productImage ? `
+                <div style="margin-bottom: 24px;">
+                  <img src="${productImage}" alt="${itemName}" style="max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #27272a;" />
+                </div>
+              ` : ''}
+              
+              ${material ? `<p style="color: #a1a1aa; font-size: 12px; margin: 0 0 24px 0;">${material} &middot; ${dimensions}</p>` : ''}
 
+            </div>                  
+  
           </div>
           
           <a href="${targetUrl}" style="display: inline-block; background-color: #ffffff; color: #000000; text-decoration: none; padding: 18px 36px; border-radius: 30px; font-size: 11px; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; transition: opacity 0.3s;">
@@ -208,13 +209,46 @@ const generateLuxuryEmailHtml = (customerName: string, itemName: string, message
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-        // 💎 [CSO의 검문소] 프론트엔드가 보낸 모든 택배 상자를 뜯어서 터미널에 출력합니다.
+    // 검문소 로그
     console.log("=====================================");
     console.log("📦 [Webhook 수신 데이터 전체]:", JSON.stringify(body, null, 2));
-    console.log("🔍 [Product Image 단독 확인]:", body.productImage ? body.productImage : "❌ 텅 비어있음 (전달 안 됨)");
     console.log("=====================================");
     // 🍏 프론트엔드에서 넘어오는 작가 정보(artistEmail)를 추가로 받습니다.
     const { orderId, status, customerName, customerEmail, itemName, artistEmail, petName, petBirth, brandColor, petImage, productImage, material, dimensions, totalEditions } = body;
+    // 💎 [CSO의 지능형 복구 시스템] 프론트엔드가 강아지 정보를 빼먹고 보냈을 경우, 서버가 직접 DB를 뒤져 찾아옵니다.
+    let finalPetName = petName;
+    let finalPetBirth = petBirth;
+    if (!finalPetName || !finalPetBirth) {
+      console.log("🚨 [경고] 강아지 정보 누락 감지. 자체 DB 복구를 시작합니다...");
+      
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      // 1. 주문 ID(orderId)를 단서로 삼아 이 주문을 한 고객의 user_id를 찾아냅니다.
+      const { data: orderData } = await supabase
+        .from('pre_orders')
+        .select('user_id')
+        .eq('id', orderId)
+        .maybeSingle();
+
+      if (orderData?.user_id) {
+        // 2. 해당 고객의 갤러리(masterpieces) 금고를 열어 가장 최근에 저장한 강아지 이름과 생일을 훔쳐옵니다.
+        const { data: petData } = await supabase
+          .from('masterpieces')
+          .select('pet_name, pet_birth_date')
+          .eq('user_id', orderData.user_id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (petData) {
+          finalPetName = petData.pet_name;
+          finalPetBirth = petData.pet_birth_date;
+          console.log(`🚑 [데이터 자체 복구 완료] 이름: ${finalPetName}, 생일: ${finalPetBirth}`);
+        }
+      }
+    }
 
     if (!statusMessages[status]) {
       return NextResponse.json({ success: true, message: "알림 대상 상태가 아님" });
@@ -227,22 +261,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "No target email provided" }, { status: 400 });
     }
 
-    // 1. 고객에게 보내는 메일 (기존 로직)
+    // 1. 고객에게 보내는 메일 (복구된 finalPetName, finalPetBirth를 주입합니다)
     await resend.emails.send({
       from: 'PAWTRAIT EDITION Concierge <concierge@pawtraitedition.com>',
       to: targetEmail,
       subject: `[PAWTRAIT EDITION] ${messageData.title}: 여정의 업데이트`,
-      html: generateLuxuryEmailHtml(customerName, itemName, messageData, productImage, material, dimensions,totalEditions, petName, petBirth, brandColor),
+      html: generateLuxuryEmailHtml(customerName, itemName, messageData, productImage, material, dimensions, totalEditions, finalPetName, finalPetBirth, brandColor),
     });
     console.log(`[Email Sent] VIP Customer: ${targetEmail}`);
 
-    // 💎 작가에게 보내는 작업 지시서 메일 발송 로직 (새로운 파라미터 추가)
+    // 2. 작가에게 보내는 작업 지시서 메일 (복구된 finalPetName, finalPetBirth를 주입합니다)
     if (status === 'crafting' && artistEmail) {
       await resend.emails.send({
         from: 'PAWTRAIT EDITION Work Desk <concierge@pawtraitedition.com>',
         to: artistEmail,
         subject: `[PAWTRAIT EDITION 주문서] ${itemName} 의뢰가 도착했습니다.`,
-        html: generateArtistCardHtml(orderId, itemName, customerName, petName, petBirth, brandColor, petImage, productImage, material, dimensions,totalEditions),
+        html: generateArtistCardHtml(orderId, itemName, customerName, finalPetName, finalPetBirth, brandColor, petImage, productImage, material, dimensions, totalEditions),
       });
       console.log(`[Email Sent] Artist Work Order: ${artistEmail}`);
     }
