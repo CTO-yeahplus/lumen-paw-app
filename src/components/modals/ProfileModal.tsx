@@ -143,36 +143,72 @@ export default function ProfileModal({ isOpen, onClose, dominantColor }: Profile
         
         {/* 프로필 바텀 시트 */}
         <div className={`absolute bottom-0 left-0 w-full bg-zinc-950 border-t border-zinc-800 rounded-t-[32px] p-6 pb-12 transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] ${isOpen ? "translate-y-0" : "translate-y-full"} shadow-[0_-20px_50px_rgba(0,0,0,0.8)]`}>
-          <div className="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-8" />
-          
-          {/* 💎 플래티넘 블랙 카드 UI (Platinum Black Card) */}
-          <div className="relative w-full aspect-[1.586/1] rounded-2xl p-6 mb-8 overflow-hidden group shadow-[0_10px_40px_rgba(0,0,0,0.8)] border border-zinc-700/50 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black">
-            {/* 메탈릭 빛 반사 효과 */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-50 pointer-events-none" />
-            
-            {/* 🍏 고객 고유의 아우라 컬러 백라이트 */}
-            <div className="absolute -top-16 -right-16 w-40 h-40 blur-[50px] opacity-40 pointer-events-none" style={{ backgroundColor: dominantColor }} />
-
-            {/* 스마트 IC 칩 디테일 (플래티넘 카드의 시그니처) */}
-            <div className="w-10 h-8 border border-zinc-600/50 rounded-md mb-6 flex flex-col justify-between p-1 opacity-70">
-              <div className="w-full h-[1px] bg-zinc-600/50" />
-              <div className="w-full h-[1px] bg-zinc-600/50" />
-              <div className="w-full h-[1px] bg-zinc-600/50" />
+          {/* 💎 투박한 스와이프 손잡이를 제거하고, VIP 라운지의 품격을 담은 헤더로 교체합니다. */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-2.5">
+              {/* 고객의 고유 컬러(dominantColor)를 활용하여 숨쉬는 듯한 인디케이터를 띄웁니다 */}
+              <div 
+                className="w-1.5 h-1.5 rounded-full animate-pulse" 
+                style={{ 
+                  backgroundColor: dominantColor || '#ffffff',
+                  boxShadow: `0 0 10px ${dominantColor || '#ffffff'}80` 
+                }} 
+              />
+              <h3 className="text-[10px] font-bold text-zinc-400 tracking-[0.2em] uppercase">
+                Collector Profile
+              </h3>
             </div>
+            
+            <button 
+              onClick={onClose} 
+              className="text-[10px] text-zinc-500 font-bold tracking-widest uppercase border border-zinc-800/50 px-3 py-1.5 rounded-full hover:bg-zinc-800 hover:text-white transition-all active:scale-95"
+            >
+              Close
+            </button>
+          </div>          
+          {/* 💎 플래티넘 블랙 카드 UI (Platinum Black Card) */}
+          {/* 💎 럭셔리 VIP 멤버십 카드 */}
+          <div className="relative w-full aspect-[1.6/1] rounded-2xl border border-zinc-800 p-6 flex flex-col justify-between mb-8 overflow-hidden group shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
+            
+            {/* 🍏 1. 베이스 레이어: OG 이미지 (은은하게 깔림) */}
+            <div 
+              className="absolute inset-0 z-0 opacity-40 mix-blend-luminosity grayscale transition-transform duration-1000 group-hover:scale-105"
+              style={{
+                backgroundImage: 'url(/images/og-image.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
+            
+            {/* 🍏 2. 틴트 레이어: 가독성을 위한 극강의 다크 그라데이션 오버레이 */}
+            <div className="absolute inset-0 z-0 bg-gradient-to-br from-zinc-950/90 via-zinc-900/70 to-black/95" />
 
-            {/* 카드 정보 */}
-            <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
-              <div>
-                <div className="text-[9px] font-bold tracking-[0.3em] text-zinc-400 uppercase mb-1 drop-shadow-md">
-                PAWTRAIT EDITION Black Platinum
+            {/* 🍏 3. 콘텐츠 레이어 (z-10을 주어 이미지 위로 띄웁니다) */}
+            <div className="relative z-10 flex justify-between items-start">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center shadow-lg">
+                  <span className="text-lg font-serif text-white">{userData?.initial}</span>
                 </div>
-                <h3 className="text-xl font-serif text-white tracking-widest drop-shadow-md">{userData?.name || "VIP GUEST"}</h3>
+                <div>
+                  <h3 className="text-sm font-bold text-white tracking-wide">{userData?.name}</h3>
+                  <p className="text-[10px] text-zinc-400 mt-0.5">{userData?.email}</p>
+                </div>
               </div>
+              <div className="absolute -top-16 -right-16 w-40 h-40 blur-[50px] opacity-10 pointer-events-none" style={{ backgroundColor: dominantColor }} />
               
               {/* 카드 우측 하단: 아우라 엠블럼 */}
               <div className="w-8 h-8 rounded-full border-[1.5px] flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)] bg-black/50 backdrop-blur-sm" style={{ borderColor: dominantColor }}>
                 <div className="w-3 h-3 rounded-full shadow-[0_0_10px_currentColor]" style={{ backgroundColor: dominantColor, color: dominantColor }} />
               </div>
+            </div>
+
+            <div className="relative z-10 flex justify-between items-end">
+              <div>
+                <p className="text-[8px] text-zinc-500 tracking-[0.2em] uppercase mb-1">Membership</p>
+                <p className="text-xs font-mono text-zinc-300 tracking-widest">PAWTRAIT EDITION BLACK PLATINUM</p>
+              </div>
+              
+
             </div>
           </div>
 
@@ -184,7 +220,7 @@ export default function ProfileModal({ isOpen, onClose, dominantColor }: Profile
             >
               <div className="flex items-center gap-4">
                 <div className="w-3 h-3 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-transform duration-500 group-hover:scale-110" style={{ backgroundColor: dominantColor }} />
-                <span className="text-sm font-bold text-white tracking-widest uppercase">Private Archive</span>
+                <span className="text-sm font-bold text-white tracking-widest uppercase">굿즈 구매 내역 및 상태</span>
               </div>
               <span className="text-[10px] text-zinc-500 tracking-[0.2em] group-hover:text-white transition-colors">Enter &rarr;</span>
             </button>

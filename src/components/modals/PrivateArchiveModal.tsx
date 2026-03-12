@@ -90,7 +90,7 @@ export default function PrivateArchiveModal({ isOpen, onClose, dominantColor }: 
         <header className="flex justify-between items-center p-8 border-b border-zinc-900 relative overflow-hidden shrink-0">
           <div className="absolute top-0 left-0 w-full h-1" style={{ backgroundColor: dominantColor }} />
           <div>
-            <h2 className="text-2xl font-serif text-white tracking-widest uppercase">Private Archive</h2>
+            <h2 className="text-2xl font-serif text-white tracking-widest uppercase">굿즈 구매 내역 및 상태</h2>
             <p className="text-[10px] text-zinc-500 tracking-[0.3em] uppercase mt-2">우리의 순간이 기록된 내 갤러리</p>
           </div>
           <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors text-xs font-bold tracking-widest uppercase">Close</button>
