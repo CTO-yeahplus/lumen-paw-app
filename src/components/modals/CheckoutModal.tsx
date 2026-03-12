@@ -377,7 +377,7 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
                 onClick={onClose}
                 className="w-full h-14 bg-transparent border border-zinc-700 hover:bg-zinc-800 text-white font-bold text-[11px] tracking-[0.2em] uppercase rounded-2xl active:scale-95 transition-all"
               >
-                Return to Vault
+                내 갤러리로 돌아가기
               </button>
             </div>
 

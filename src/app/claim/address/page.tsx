@@ -90,7 +90,7 @@ function AddressClaimContent() {
               모든 공정이 완료되는 대로 안전하게 모시겠습니다.
             </p>
             <button onClick={() => router.push('/vault')} className="mt-10 px-8 py-3 rounded-full border border-zinc-700 text-[10px] font-bold tracking-[0.2em] uppercase text-zinc-300 hover:text-white hover:border-white transition-all">
-              Return to Vault
+              갤러리로 돌아가기
             </button>
           </div>
         ) : (

@@ -75,7 +75,7 @@ function ClaimContent() {
 
         // 누군가 이미 가져갔다면(is_claimed: true), 화면 자체를 띄우지 않고 튕겨냅니다.
         if (existingAsset && existingAsset.is_claimed) {
-          setErrorMsg("이미 다른 컬렉터의 프라이빗 갤러리에 소장된 에디션입니다.");
+          setErrorMsg("이미 이전에 갤러리에 소장된 에디션입니다.");
           setIsLoading(false);
           return;
         }
@@ -89,6 +89,9 @@ function ClaimContent() {
         
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
+
+        // 🚨 [CSO의 진단 코드] 브라우저 개발자 도구(F12) 콘솔에서 이 로그를 반드시 확인하십시오!
+        console.log("📦 API가 내려준 원본 데이터:", data);
 
         setImages(data.images || []);
         setColorChips(data.colorChips || []);
@@ -145,7 +148,7 @@ function ClaimContent() {
       if (error) {
         // 💎 DB에서 중복(UNIQUE 제약 위반)을 튕겨냈을 때의 에러 처리
         if (error.code === '23505') { 
-          throw new Error("이미 다른 컬렉터에게 소유권이 넘어간 에디션입니다. (중복 스캔 방지)");
+          throw new Error("이미 다른 컬렉터가 갤러리에 에디션입니다. (중복 스캔 방지)");
         }
         throw error;
       }
@@ -180,7 +183,7 @@ function ClaimContent() {
         </div>
         <p className="text-sm font-light tracking-wide">{errorMsg}</p>
         <button onClick={() => router.push('/vault')} className="mt-8 px-6 py-2 border border-zinc-800 rounded-full text-xs hover:bg-white hover:text-black transition-colors">
-          Return to Vault
+          갤러리로 돌아가기
         </button>
       </div>
     );
@@ -308,7 +311,7 @@ function ClaimContent() {
                 }
               `}
             >
-              {isSaving ? "Securing Data..." : !isFormValid ? "Complete Profile to Save" : `Add ${selectedIndexes.length} Assets to Vault`}
+              {isSaving ? "Securing Data..." : !isFormValid ? "Complete Profile to Save" : `Add ${selectedIndexes.length} Assets to Gallery`}
             </button>
           </div>
         </div>

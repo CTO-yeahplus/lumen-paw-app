@@ -44,12 +44,28 @@ export async function POST(req: Request) {
     // 💎 4. 컬러칩 추출 (선택사항)
     let colorChips: string[] = [];
     try {
+      console.log(`📍 JSON 분석 중: ${jsonUrl}`);
       const jsonResp = await fetch(jsonUrl);
       if (jsonResp.ok) {
         const jsonData = await jsonResp.json();
-        if (jsonData.colorChips && Array.isArray(jsonData.colorChips)) {
-          colorChips = jsonData.colorChips.map((c: any) => c.hexColor || c);
+        console.log("📦 S3 원본 JSON:", jsonData);
+        // 🍏 1순위: [최신 Pawtrait 포맷] bottomContent 안쪽에 colorChips가 숨어있는 경우
+        if (jsonData.bottomContent && jsonData.bottomContent.colorChips && Array.isArray(jsonData.bottomContent.colorChips)) {
+          colorChips = jsonData.bottomContent.colorChips.map((c: any) => c.hexColor || c);
+          console.log("✅ Pawtrait 포맷 컬러칩 추출 성공:", colorChips);
         }
+        // 🍏 2순위: [구버전 포맷] 최상단(Root)에 colorChips가 있는 경우
+        else if (jsonData.colorChips && Array.isArray(jsonData.colorChips)) {
+          colorChips = jsonData.colorChips.map((c: any) => c.hexColor || c);
+          console.log("✅ 구버전 포맷 컬러칩 추출 성공:", colorChips);
+        }
+        // 🍏 3순위: [일반 인생네컷 포맷] userSelectedColor 단일 색상만 있는 경우
+        else if (jsonData.userSelectedColor) {
+          colorChips = [jsonData.userSelectedColor]; 
+          console.log("✅ 단일 색상 추출 성공:", colorChips);
+        }
+      } else {
+        console.log(`⚠️ JSON 파일을 찾을 수 없습니다. Status: ${jsonResp.status}`);
       }
     } catch (e) {
       console.log("⚠️ 컬러칩 추출 실패 (무시하고 진행)");

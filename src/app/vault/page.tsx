@@ -233,7 +233,7 @@ export default function VaultPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-[10px] tracking-widest text-zinc-500 uppercase animate-pulse">
-        Opening Private Vault...
+        Opening Private Gallery...
       </div>
     }>
       <VaultContent />

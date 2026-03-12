@@ -15,6 +15,10 @@ export default function ProfileModal({ isOpen, onClose, dominantColor }: Profile
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [userData, setUserData] = useState<{ name: string; email: string; initial: string } | null>(null);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+  // 🍏 [추가] 회원 탈퇴 로딩 상태
+  const [isDeleting, setIsDeleting] = useState(false);
+  // 🍏 [추가] 커스텀 탈퇴 경고창을 제어하는 상태
+  const [isExitPromptOpen, setIsExitPromptOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -43,6 +47,86 @@ export default function ProfileModal({ isOpen, onClose, dominantColor }: Profile
       console.error("로그아웃 에러:", error);
       alert("로그아웃 중 문제가 발생했습니다.");
       setIsLoggingOut(false);
+    }
+  };
+
+  // 💎 [핵심 수술] 관리자 API를 호출하여 내 갤러리와 데이터를 영구 파기하는 함수
+  const handleDeleteAccount = async () => {
+    const isConfirmed = window.confirm(
+      "정말 PAWTRAIT EDITION 프라이빗 갤러리를 영구 폐쇄하시겠습니까?\n\n소장 중인 모든 마스터피스 데이터가 즉시 파기되며 복구할 수 없습니다."
+    );
+
+    if (!isConfirmed) return;
+
+    setIsDeleting(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("로그인 정보를 찾을 수 없습니다.");
+
+      // 앞서 만든 관리자 API 호출
+      const res = await fetch('/api/auth/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "탈퇴 처리 중 문제가 발생했습니다.");
+      }
+
+      // 데이터가 완벽히 지워지면 로그아웃과 동일하게 세션을 지우고 대문으로 쫓아냄
+      await supabase.auth.signOut();
+      sessionStorage.removeItem("lumen_extracted_image");
+      sessionStorage.removeItem("lumen_asset_id");
+      sessionStorage.removeItem("lumen_asset_date");
+      
+      alert("갤러리가 성공적으로 폐쇄되었습니다. 그동안 함께해주셔서 감사합니다.");
+      router.push("/"); 
+
+    } catch (err: any) {
+      alert(err.message);
+      setIsDeleting(false);
+    }
+  };
+
+  // 💎 1. 버튼을 누르면 브라우저 팝업 대신 우리가 만든 럭셔리 경고창을 엽니다.
+  const handleOpenExitPrompt = () => {
+    setIsExitPromptOpen(true);
+  };
+
+  // 💎 2. 경고창에서 'Confirm'을 눌렀을 때만 실행되는 실제 파기 로직 (window.confirm 제거)
+  const executeDeleteAccount = async () => {
+    setIsDeleting(true);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("로그인 정보를 찾을 수 없습니다.");
+
+      const res = await fetch('/api/auth/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "탈퇴 처리 중 문제가 발생했습니다.");
+      }
+
+      await supabase.auth.signOut();
+      sessionStorage.removeItem("lumen_extracted_image");
+      sessionStorage.removeItem("lumen_asset_id");
+      sessionStorage.removeItem("lumen_asset_date");
+      
+      alert("갤러리가 성공적으로 폐쇄되었습니다. 그동안 함께해주셔서 감사합니다.");
+      router.push("/"); 
+
+    } catch (err: any) {
+      alert(err.message);
+      setIsDeleting(false);
+      setIsExitPromptOpen(false);
     }
   };
 
@@ -114,7 +198,52 @@ export default function ProfileModal({ isOpen, onClose, dominantColor }: Profile
           >
             {isLoggingOut ? "Disconnecting..." : "Sign Out"}
           </button>
+
+          {/* 우아한 퇴장 버튼 (onClick 함수 변경) */}
+          <div className="text-center pt-2">
+            <button 
+              onClick={handleOpenExitPrompt} // 🍏 변경됨
+              disabled={isDeleting || isLoggingOut}
+              className="text-[9px] text-zinc-600 font-bold tracking-widest uppercase hover:text-red-500 transition-colors border-b border-transparent hover:border-red-500 pb-0.5"
+            >
+              Close Private Gallery (회원 탈퇴)
+            </button>
+          </div>
         </div>
+
+        {/* 💎 [핵심 수술] 럭셔리 엑시트 룸 (isExitPromptOpen이 true일 때만 모달 전체를 덮음) */}
+        {isExitPromptOpen && (
+          <div className="absolute inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center p-8 animate-in fade-in zoom-in-95 duration-300">
+            {/* 경고 아이콘 */}
+            <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(239,68,68,0.15)]">
+              <span className="text-red-500 font-serif italic text-xl">!</span>
+            </div>
+            
+            <h3 className="text-xl font-serif font-bold text-white mb-4 tracking-wide">Gallery Closure</h3>
+            
+            <p className="text-xs text-zinc-400 text-center leading-relaxed mb-10 tracking-wide">
+              정말 PAWTRAIT EDITION 프라이빗 갤러리를<br />영구 폐쇄하시겠습니까?<br /><br />
+              <span className="text-red-400 font-bold">소장 중인 모든 마스터피스 데이터가<br />즉시 파기되며 복구할 수 없습니다.</span>
+            </p>
+            
+            <div className="flex gap-3 w-full max-w-[280px]">
+              <button 
+                onClick={() => setIsExitPromptOpen(false)} 
+                disabled={isDeleting}
+                className="flex-1 h-12 rounded-xl bg-zinc-900 text-zinc-400 font-bold text-[10px] tracking-widest uppercase hover:bg-zinc-800 hover:text-white transition-colors"
+              >
+                한번 더 생각하기
+              </button>
+              <button 
+                onClick={executeDeleteAccount} 
+                disabled={isDeleting} 
+                className="flex-1 h-12 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 font-bold text-[10px] tracking-widest uppercase hover:bg-red-500 hover:text-white transition-all active:scale-95"
+              >
+                {isDeleting ? "Processing..." : "회원탈퇴 확인"}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 🍏 2. 아카이브 모달 레이어 (z-[200]으로 완전히 분리하여 얼어붙는 버그 원천 차단) */}
