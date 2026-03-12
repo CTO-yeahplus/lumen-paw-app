@@ -326,19 +326,29 @@ export default function CheckoutModal({ item, dominantColor, onClose }: Checkout
 
               <button 
                 onClick={handleSecureEdition}
-                disabled={isSubmitting || remainingCount === 0} // 🍏 완판 시 버튼 비활성화
-                className={`w-full h-14 font-extrabold text-[12px] tracking-[0.2em] uppercase rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.15)] active:scale-95 transition-all flex items-center justify-center gap-2 ${
+                // 1. 제출중, 미동의, 완판 3가지 경우에 모두 버튼을 물리적으로 잠급니다.
+                disabled={isSubmitting || !isAgreed || remainingCount === 0} 
+                className={`w-full h-14 font-extrabold text-[12px] tracking-[0.2em] uppercase rounded-2xl transition-all duration-500 flex items-center justify-center gap-2 ${
                   remainingCount === 0 
-                  ? "bg-zinc-800 text-zinc-500 cursor-not-allowed shadow-none" 
-                  : "bg-white text-black hover:bg-zinc-200"
+                  // 상태 A: 완판 (가장 우선순위가 높음)
+                  ? "bg-zinc-900 text-zinc-700 cursor-not-allowed shadow-none border border-zinc-800/50" 
+                  : !isAgreed
+                  // 상태 B: 재고는 있지만 아직 서약서에 동의하지 않음 (잠금 상태)
+                  ? "bg-zinc-900 text-zinc-500 cursor-not-allowed shadow-none border border-zinc-800"
+                  // 상태 C: 재고도 있고 동의도 완료됨 (예약 가능 상태)
+                  : "bg-white text-black hover:bg-zinc-200 shadow-[0_0_30px_rgba(255,255,255,0.15)] active:scale-95"
                 }`}
               >
                 {isSubmitting ? (
                   <span className="animate-pulse">SECURING YOUR EDITION...</span>
                 ) : remainingCount === 0 ? (
                   <>SOLD OUT (완판)</>
+                ) : !isAgreed ? (
+                  // 💎 동의하지 않은 고객에게 명확한 가이드를 줍니다.
+                  <>PLEASE AGREE TO CONTINUE</> 
                 ) : (
-                  <> PAWTRAIt EDITION 예약하기 </>
+                  // 모든 조건이 충족되었을 때 비로소 대표님의 오리지널 문구가 뜹니다.
+                  <>PAWTRAIT EDITION 예약하기</>
                 )}
               </button>
             </div>

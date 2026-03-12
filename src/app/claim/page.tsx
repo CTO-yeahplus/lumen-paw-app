@@ -44,12 +44,12 @@ function ClaimContent() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   // 1. 게이트 검문: 로그인 확인 및 데이터 추출
+  // 1. 게이트 검문: 로그인 확인, 소유권 잠금 확인, 데이터 추출
   useEffect(() => {
     const checkAuthAndExtract = async () => {
       setIsLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       
-      // 로그인이 안 되어 있다면, 현재 딥링크 주소를 티켓으로 쥐여주고 모달을 엽니다.
       if (!session) {
         sessionStorage.setItem("lumen_redirect_after_login", window.location.href);
         setIsLoading(false);
@@ -57,7 +57,6 @@ function ClaimContent() {
         return; 
       }
 
-      // 로그인이 되어 있다면 QR URL 확인 후 추출 API 호출
       if (!sourceUrl) {
         setErrorMsg("유효한 QR URL이 없습니다.");
         setIsLoading(false);
@@ -65,6 +64,23 @@ function ClaimContent() {
       }
 
       try {
+        // 💎 [방어선 1] 이 sourceUrl(QR)이 이미 누군가에게 소유되었는지 확인 (SELECT)
+        const { data: existingAsset, error: checkError } = await supabase
+          .from('masterpieces')
+          .select('is_claimed')
+          .eq('source_url', sourceUrl)
+          .maybeSingle(); // 에러 없이 0건이나 1건을 가져옴
+
+        if (checkError) throw checkError;
+
+        // 누군가 이미 가져갔다면(is_claimed: true), 화면 자체를 띄우지 않고 튕겨냅니다.
+        if (existingAsset && existingAsset.is_claimed) {
+          setErrorMsg("이미 다른 컬렉터의 프라이빗 갤러리에 소장된 에디션입니다.");
+          setIsLoading(false);
+          return;
+        }
+
+        // 💎 [추출 API 호출] 소유권이 깨끗하다면 기존처럼 이미지를 추출합니다.
         const res = await fetch("/api/extract", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -77,7 +93,7 @@ function ClaimContent() {
         setImages(data.images || []);
         setColorChips(data.colorChips || []);
       } catch (err: any) {
-        setErrorMsg(err.message || "데이터 추출에 실패했습니다.");
+        setErrorMsg(err.message || "데이터를 확인하는 중 문제가 발생했습니다.");
       } finally {
         setIsLoading(false);
       }
@@ -112,19 +128,27 @@ function ClaimContent() {
         return;
       }
 
-      // 💎 DB에 완벽하게 꽂아 넣습니다.
+      // 💎 [방어선 2] DB에 데이터를 넣으면서 동시에 자물쇠(is_claimed: true)를 영구적으로 잠급니다.
       const { error } = await supabase.from('masterpieces').insert({
         user_id: user.id,
-        source_url: sourceUrl,
+        source_url: sourceUrl, // 🍏 이제 DB에서 이 값이 중복되는지 자동으로 감시합니다!
         images: selectedImages,
         color_palette: colorChips,
         dominant_color: dominantColor,
         pet_name: petName || "UNKNOWN",
-        pet_birth_date: petBirthDate || "202X.XX.XX"
+        pet_birth_date: petBirthDate || "202X.XX.XX",
+        
+        // 🚨 이 부분이 제대로 들어가지 않아 false가 되었던 것입니다. 확실하게 true를 박아줍니다.
+        is_claimed: true 
       });
 
-      if (error) throw error;
-
+      if (error) {
+        // 💎 DB에서 중복(UNIQUE 제약 위반)을 튕겨냈을 때의 에러 처리
+        if (error.code === '23505') { 
+          throw new Error("이미 다른 컬렉터에게 소유권이 넘어간 에디션입니다. (중복 스캔 방지)");
+        }
+        throw error;
+      }
       // 💎 완벽하게 저장되면 금고 화면으로 리다이렉트
       //router.push("/vault");
       
