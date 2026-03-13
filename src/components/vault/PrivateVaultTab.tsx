@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckoutItem } from "@/components/modals/CheckoutModal";
 import LumenCustomSection from "@/components/vault/LumenCustomSection";
 import Image from "next/image"; // 🍏 파일 맨 위에 추가
@@ -44,29 +44,8 @@ export default function PrivateVaultTab({
   // 🍏 Z축 아카이브 서랍을 열고 닫는 상태
   const [isArchiveSheetOpen, setIsArchiveSheetOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false); // 🍏 추가: 팔레트 팝업 상태
-  // 🍏 [추가] 스와이프 감지를 위한 터치 시작 Y좌표
-  const [touchStartY, setTouchStartY] = useState<number | null>(null);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartY(e.touches[0].clientY);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStartY === null) return;
-    
-    const touchCurrentY = e.touches[0].clientY;
-    const deltaY = touchCurrentY - touchStartY;
-
-    // 💎 손가락을 80px 이상 아래로 끌어내렸다면 우아하게 서랍을 닫습니다.
-    if (deltaY > 80) {
-      setIsArchiveSheetOpen(false);
-      setTouchStartY(null); // 중복 실행 방지
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setTouchStartY(null);
-  };
+  const [isMobile, setIsMobile] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const formatDate = (dateString: string) => {
     const d = new Date(dateString);
@@ -96,6 +75,55 @@ export default function PrivateVaultTab({
       </div>
     );
   }
+  useEffect(() => {
+    // 💎 기기 환경을 파악하여 아이콘과 기능을 스스로 전환합니다.
+    const checkMobile = () => {
+      const userAgent = typeof window.navigator === "undefined" ? "" : navigator.userAgent;
+      const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+      setIsMobile(mobileRegex.test(userAgent) || window.innerWidth < 768);
+    };
+    checkMobile();
+  }, []);
+
+  // 💎 [추가] 시스템 공유(모바일) 또는 강제 다운로드(PC)를 실행하는 마스터 로직
+  const handleShareOrDownload = async () => {
+    if (!displayImage) return;
+    
+    setIsDownloading(true);
+    try {
+      const response = await fetch(displayImage);
+      if (!response.ok) throw new Error("네트워크 응답이 올바르지 않습니다.");
+      
+      const blob = await response.blob();
+      const safeName = (displayPetName || "MASTERPIECE").replace(/[^a-zA-Z0-9가-힣]/g, "_").toUpperCase();
+      const fileName = `PAWTRAIT_${safeName}_ORIGINAL.jpg`;
+      const file = new File([blob], fileName, { type: blob.type });
+
+      if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: `${displayPetName || 'PAWTRAIT'} 마스터피스`,
+          text: 'PAWTRAIT EDITION 프라이빗 갤러리 원본',
+          files: [file]
+        });
+      } else {
+        const blobUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(blobUrl);
+      }
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error("처리 에러:", error);
+        alert("원본을 처리하는 중 문제가 발생했습니다.");
+      }
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="px-6 py-10">
@@ -109,6 +137,39 @@ export default function PrivateVaultTab({
         }}
       >
         <div className="aspect-[3/4] rounded-[32px] overflow-hidden border border-zinc-800 relative shadow-2xl bg-zinc-900 z-10 transition-colors duration-1000" style={{ boxShadow: `0 20px 50px -20px ${dominantColor}40` }}>
+          {/* 💎 럭셔리 원본 다운로드 / 공유 버튼 (이미지 컨테이너의 absolute 안쪽에 배치) */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleShareOrDownload();
+          }}
+          disabled={isDownloading || !displayImage}
+          title={isMobile ? "Share Original" : "Download Original"}
+          className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-md border border-white/20 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 text-white shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+        >
+          {isDownloading ? (
+            // 로딩 스피너
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : isMobile ? (
+            // 모바일: 공유 아이콘
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3"></circle>
+              <circle cx="6" cy="12" r="3"></circle>
+              <circle cx="18" cy="19" r="3"></circle>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+            </svg>
+          ) : (
+            // PC: 다운로드 아이콘
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          )}
+        </button>
+
+
           <div className="absolute inset-0 bg-cover bg-center transition-all duration-700" style={{ backgroundImage: `url('${displayImage}')` }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
           

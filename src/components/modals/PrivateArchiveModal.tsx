@@ -12,11 +12,20 @@ export default function PrivateArchiveModal({ isOpen, onClose, dominantColor }: 
   const [masterpieces, setMasterpieces] = useState<any[]>([]);
   const [preOrders, setPreOrders] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // 🍏 [추가] 현재 기기가 모바일인지 판별하는 상태
+  const [isMobile, setIsMobile] = useState(false);
 
-  // 🍏 모달이 열릴 때마다 고객의 실제 마스터피스와 선주문(pre_orders) 내역을 가져옵니다.
+
   useEffect(() => {
     if (isOpen) {
       fetchArchiveData();
+      // 💎 모바일 여부 판별 (화면 크기 및 User Agent 기준)
+      const checkMobile = () => {
+        const userAgent = typeof window.navigator === "undefined" ? "" : navigator.userAgent;
+        const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+        setIsMobile(mobileRegex.test(userAgent) || window.innerWidth < 768);
+      };
+      checkMobile();
     }
   }, [isOpen]);
 
