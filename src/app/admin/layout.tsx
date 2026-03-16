@@ -9,6 +9,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   // 🍏 사이드바 메뉴 리스트
   const menuItems = [
     { name: "Dashboard", path: "/admin", icon: "◱" },
+    { name: "Manager User", path: "/admin/members", icon: "👥" },
     { name: "VIP Waitlist", path: "/admin/waitlist", icon: "🗝️" },
     { name: "Manage Orders", path: "/admin/manage_orders", icon: "⚒️" },
     { name: "General Orders", path: "/admin/orders", icon: "📦" },

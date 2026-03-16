@@ -10,6 +10,7 @@ export default function AdminDashboard() {
     orders: 0,
     products: 0,
     editorials: 0,
+    users: 0, // 🍏 [추가] 회원 수를 담을 상태
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -20,28 +21,45 @@ export default function AdminDashboard() {
   const fetchDashboardStats = async () => {
     setIsLoading(true);
     
-    // 🍏 다중 비동기 쿼리로 각 테이블의 총 데이터 개수(Count)를 동시에 가져옵니다.
-    const [
-      { count: waitlistCount },
-      { count: preOrdersCount },
-      { count: ordersCount },
-      { count: productsCount },
-      { count: editorialsCount }
-    ] = await Promise.all([
-      supabase.from('waitlists').select('*', { count: 'exact', head: true }),
-      supabase.from('pre_orders').select('*', { count: 'exact', head: true }),
-      supabase.from('orders').select('*', { count: 'exact', head: true }),
-      supabase.from('products').select('*', { count: 'exact', head: true }),
-      supabase.from('editorials').select('*', { count: 'exact', head: true })
-    ]);
+    try {
+      // 1. 다중 비동기 쿼리로 각 테이블의 총 데이터 개수(Count)를 동시에 가져옵니다.
+      const [
+        { count: waitlistCount },
+        { count: preOrdersCount },
+        { count: ordersCount },
+        { count: productsCount },
+        { count: editorialsCount },
+        ] = await Promise.all([
+        supabase.from('waitlists').select('*', { count: 'exact', head: true }),
+        supabase.from('pre_orders').select('*', { count: 'exact', head: true }),
+        supabase.from('orders').select('*', { count: 'exact', head: true }),
+        supabase.from('products').select('*', { count: 'exact', head: true }),
+        supabase.from('editorials').select('*', { count: 'exact', head: true })
+      ]);
 
-    setStats({
-      waitlist: waitlistCount || 0,
-      manageOrders: preOrdersCount || 0,
-      orders: ordersCount || 0,
-      products: productsCount || 0,
-      editorials: editorialsCount || 0,
-    });
+      // 💎 2. [추가] 우리가 만든 안전한 관리자 API를 찔러서 실제 VIP 가입자 수를 가져옵니다.
+      let usersCount = 0;
+      try {
+        const res = await fetch('/api/admin/members');
+        const data = await res.json();
+        if (data.success) {
+          usersCount = data.members.length;
+        }
+      } catch (memberErr) {
+        console.error("컬렉터 수 스캔 실패:", memberErr);
+      }
+
+      setStats({
+        waitlist: waitlistCount || 0,
+        manageOrders: preOrdersCount || 0,
+        orders: ordersCount || 0,
+        products: productsCount || 0,
+        editorials: editorialsCount || 0,
+        users: usersCount, // 🍏 반영
+      });
+    } catch (error) {
+      console.error("대시보드 통계 로드 실패:", error);
+    }
     
     setIsLoading(false);
   };
@@ -99,6 +117,16 @@ export default function AdminDashboard() {
       {/* 🍏 그리드 레이아웃: 전략적 중요도에 따라 카드 배치 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
+        {/* 💎 [추가] 가장 핵심적인 '고객 명부' 카드를 대시보드 최전선에 배치합니다. */}
+        <DashboardCard 
+          title="Manage Users" 
+          desc="VIP 컬렉터 명부 및 관리" 
+          count={stats.users} 
+          href="/admin/members" 
+          icon="👥" 
+          color="#D4D4D8" // 플래티넘 실버
+        />
+
         <DashboardCard 
           title="VIP Waitlist" 
           desc="초대 대기 및 승인 명단" 
